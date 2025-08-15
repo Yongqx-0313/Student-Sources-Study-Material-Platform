@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="css/profile.css">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body style="background: linear-gradient(to right, #c6defe, #ffffff);" class=" text-gray-900">
 
 
   <!-- Header -->

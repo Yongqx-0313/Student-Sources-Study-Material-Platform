@@ -46,7 +46,9 @@ $conn->close();
 </head>
 
 
-<body class="transition-colors duration-500 bg-gradient-to-b from-yellow-100 to-yellow-50 min-h-screen">
+<body 
+style="background: linear-gradient(to right, #c6defe, #ffffff);"
+class="min-h-screen">
     <!-- Header -->
     <?php include 'header.php' ?>
 
