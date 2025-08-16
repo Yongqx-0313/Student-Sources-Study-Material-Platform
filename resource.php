@@ -71,23 +71,52 @@ $conn->close();
 
     <main class="mx-auto max-w-6xl px-4 py-6">
 
-    
+
         <!-- Resource Details -->
         <div class="max-w-3xl mx-auto px-4 py-8 mb-6 bg-white shadow rounded-lg">
             <h1 class="text-2xl font-bold mb-4"><?php echo htmlspecialchars($title); ?></h1>
-                    <p class="text-gray-700 text-lg mb-4"><?php echo htmlspecialchars($detail); ?></p>
-                
-                    <?php if (!empty($pdf_file)): ?>
-                        <div class="mt-4">
-                            <h3 class="text-lg font-semibold mb-2">Preview:</h3>
-                            <iframe src="<?php echo htmlspecialchars($pdf_file); ?>" class="w-full h-[600px] border rounded-lg"></iframe>
-                            <a href="<?php echo htmlspecialchars($pdf_file); ?>" target="_blank"
-                                class="inline-block mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-                                Download PDF
-                            </a>
-                        </div>
-                    <?php endif; ?>
+            <p class="text-gray-700 text-lg mb-4"><?php echo htmlspecialchars($detail); ?></p>
+
+            <?php if (!empty($pdf_file)): ?>
+                <div class="mt-4">
+                    <h3 class="text-lg font-semibold mb-2">Preview:</h3>
+                    <iframe src="<?php echo htmlspecialchars($pdf_file); ?>" class="w-full h-[600px] border rounded-lg"></iframe>
+                    <a href="<?php echo htmlspecialchars($pdf_file); ?>" target="_blank"
+                        class="inline-block mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                        Download PDF
+                    </a>
                 </div>
+            <?php endif; ?>
+            <!-- AI Summary / Study Plan -->
+            <?php if (!empty($pdf_file)): ?>
+    <!-- AI Summary / Study Plan -->
+    <div class="max-w-3xl mx-auto px-4 py-6 bg-white shadow rounded-lg mt-4">
+        <h2 class="text-xl font-semibold mb-3">AI Study Notes</h2>
+
+        <label class="block text-sm font-medium text-slate-700">Your Gemini API Key</label>
+        <input id="geminiKey" type="password"
+            placeholder="Paste your Gemini API key"
+            class="mt-1 w-full rounded border px-3 py-2 text-sm mb-3" />
+
+        <div class="flex gap-2">
+            <button id="btnSummarize"
+                class="inline-flex items-center rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                Generate Study Notes
+            </button>
+            <button id="btnDownload" disabled
+                class="inline-flex items-center rounded bg-slate-600 px-4 py-2 text-sm font-semibold text-white/90 hover:bg-slate-700">
+                Download Notes (.txt)
+            </button>
+        </div>
+
+        <textarea id="aiOutput" rows="14"
+            placeholder="Your AI summary and study plan will appear here…"
+            class="mt-3 w-full rounded border px-3 py-2 text-sm"></textarea>
+    </div>
+<?php endif; ?>
+
+
+        </div>
 
 
         <!-- Comment Section -->
@@ -127,3 +156,104 @@ $conn->close();
 </body>
 
 </html>
+<script>
+    (function() {
+        const id = <?= (int)$id ?>; // current resource id from PHP
+        const btnSummarize = document.getElementById('btnSummarize');
+        const btnDownload = document.getElementById('btnDownload');
+        const aiOutput = document.getElementById('aiOutput');
+        const keyInput = document.getElementById('geminiKey');
+
+        // Optional: remember key in localStorage
+        keyInput.value = localStorage.getItem('gemini_api_key') || '';
+        keyInput.addEventListener('change', () => {
+            localStorage.setItem('gemini_api_key', keyInput.value.trim());
+        });
+
+        btnSummarize.addEventListener('click', async () => {
+            const apiKey = (keyInput.value || '').trim();
+            if (!apiKey) {
+                alert('Please paste your Gemini API key first.');
+                return;
+            }
+
+            btnSummarize.disabled = true;
+            btnSummarize.textContent = 'Generating…';
+            aiOutput.value = '';
+
+            try {
+                // 1) get plain text from the uploaded file
+                const extr = await fetch(`extract_text.php?id=${id}`);
+                const ejson = await extr.json();
+                if (!ejson.ok) {
+                    throw new Error(ejson.error || 'Failed to extract file text');
+                }
+
+                // 2) ask Gemini to summarize + plan
+                const prompt =
+                    `You are a helpful tutor. Create concise STUDY NOTES and a 7-day STUDY PLAN from this content.
+
+Return markdown with these sections:
+
+# Key Summary (bullets)
+# Important Concepts (bullets)
+# Common Mistakes (bullets)
+# Practice Questions (numbered)
+# 7-Day Study Plan (table: Day | Topics | Tasks | Time)
+
+CONTENT START
+${ejson.text}
+CONTENT END`;
+
+                // Pick one:
+                const MODEL = 'gemini-1.5-flash'; // fast & cheap
+                // const MODEL = 'gemini-1.5-pro';    // higher quality / longer context
+
+                const url = `https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+
+                if (!res.ok) {
+                    const errText = await res.text();
+                    throw new Error('Gemini HTTP ' + res.status + ' — ' + errText);
+                }
+
+                const data = await res.json();
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '(No content returned)';
+                aiOutput.value = text;
+                btnDownload.disabled = false;
+            } catch (err) {
+                console.error(err);
+                alert('Failed: ' + err.message);
+            } finally {
+                btnSummarize.disabled = false;
+                btnSummarize.textContent = 'Generate Study Notes';
+            }
+        });
+
+        btnDownload.addEventListener('click', () => {
+            const blob = new Blob([aiOutput.value], {
+                type: 'text/plain'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'study_notes.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    })();
+</script>

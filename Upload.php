@@ -116,6 +116,92 @@ $conn->close();
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const fileInput   = document.querySelector('input[type="file"][name="file"]');
+  const aiFillBtn   = document.getElementById('aiFillBtn');
+  const geminiKeyEl = document.getElementById('geminiKey');
+  const aiFillHint  = document.getElementById('aiFillHint');
+  const titleEl     = document.getElementById('title');
+  const detailEl    = document.getElementById('description');
+
+  if (!fileInput || !aiFillBtn || !geminiKeyEl || !titleEl || !detailEl) return;
+
+  // remember key
+  geminiKeyEl.value = localStorage.getItem('gemini_api_key') || '';
+  geminiKeyEl.addEventListener('change', () => {
+    localStorage.setItem('gemini_api_key', geminiKeyEl.value.trim());
+  });
+
+  aiFillBtn.disabled = true;
+  fileInput.addEventListener('change', () => {
+    aiFillBtn.disabled = !fileInput.files || fileInput.files.length === 0;
+  });
+
+  const callGeminiAI = async (apiKey, fileName, textSample, model='gemini-1.5-flash') => {
+    const url = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const prompt = `You are an assistant for a student-sourced study material hub.
+Return strict JSON only (no code fences, no extra text): {"title": "...", "detail": "..."}
+- "title": ≤ 80 characters
+- "detail": 2–4 concise sentences
+
+File name: ${fileName}
+Text excerpt (may be truncated):
+"""${(textSample || '').slice(0, 6000)}"""`;
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }]}] })
+    });
+    if (!res.ok) { throw new Error(`Gemini HTTP ${res.status} — ${await res.text()}`); }
+    const data = await res.json();
+    const txt = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const m = String(txt).match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('Gemini did not return JSON.');
+    return JSON.parse(m[0]);
+  };
+
+  aiFillBtn.addEventListener('click', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    if (!geminiKeyEl.value.trim()) { alert('Please paste your Gemini API key.'); geminiKeyEl.focus(); return; }
+
+    aiFillBtn.disabled = true;
+    aiFillBtn.textContent = 'Analyzing…';
+    aiFillHint?.classList.remove('hidden');
+
+    try {
+      // 1) Send the selected file to server-side extractor
+      const fd = new FormData();
+      fd.append('file', file);
+      const extr = await fetch('extract_text_from_upload.php', { method:'POST', body: fd });
+      const ejson = await extr.json();
+      if (!ejson.ok) throw new Error(ejson.error || 'Failed to extract file text');
+
+      // 2) Ask Gemini for title/detail
+      const { title, detail } = await callGeminiAI(geminiKeyEl.value.trim(), file.name, ejson.text);
+
+      if (!titleEl.value && title)  titleEl.value  = title.slice(0, 200);
+      if (!detailEl.value && detail) detailEl.value = detail;
+
+      aiFillBtn.textContent = 'Filled with AI ✅';
+    } catch (err) {
+      console.error(err);
+      alert('AI Fill failed: ' + err.message);
+      aiFillBtn.textContent = '⚡ AI Fill';
+    } finally {
+      aiFillBtn.disabled = !fileInput.files || fileInput.files.length === 0;
+      aiFillHint?.classList.add('hidden');
+      setTimeout(() => (aiFillBtn.textContent = '⚡ AI Fill'), 1100);
+    }
+  });
+});
+</script>
+
+
+
 <body style="background: linear-gradient(to right, #c6defe, #ffffff);" class=" text-gray-900">
 
 
@@ -146,8 +232,9 @@ $conn->close();
                             required />
                         <p class="mt-2 text-xs text-slate-500">PDF or DOC/DOCX • Max 20 MB</p>
 
-                        <label class="mt-4 block text-sm font-medium text-slate-700">Visibility</label>
+                        <label class="mt-3 block text-sm font-medium text-slate-700">Visibility</label>
 
+                        <!-- RIGHT UNDER the file input/visibility card -->
                         <!-- Radio chips using peer -->
                         <div class="mt-2 flex gap-2" role="radiogroup" aria-label="Visibility">
                             <!-- Public -->
@@ -170,6 +257,23 @@ $conn->close();
                         <p class="mt-2 text-xs text-slate-500">
                             Public = shown on main page • Private = only on your profile
                         </p>
+                        <div class="mt-2">
+                            <button id="aiFillBtn" type="button"
+                                class="rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed">
+                                ⚡ AI Fill
+                            </button>
+                            <div id="geminiKeyWrap">
+                                <label class="block text-md font-medium text-slate-800 mt-2">Gemini API Key</label>
+                                <input id="geminiKey" type="password"
+                                    placeholder="Paste your Gemini API key"
+                                    class="mt-1 w-full rounded border px-3 py-2 text-sm" />
+                                <p class="text-[11px] text-slate-500 mt-1">Key is stored locally in your browser (localStorage).</p>
+                            </div>
+
+                            <p id="aiFillHint" class="text-xs text-slate-500 hidden">
+                                Using the selected file to draft Title & Detail…
+                            </p>
+                        </div>
                     </div>
                     <br />
                     <p class="text-lg"><strong>Author: </strong><?php echo ($name); ?></p>
