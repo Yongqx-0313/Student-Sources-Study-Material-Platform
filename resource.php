@@ -22,10 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['comment'])) {
 }
 
 // Fetch resource
-$stmt = $conn->prepare("SELECT title, detail FROM resources WHERE id=?");
+$stmt = $conn->prepare("SELECT title, detail, pdf_file FROM resources WHERE id=?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
-$stmt->bind_result($title, $detail);
+$stmt->bind_result($title, $detail, $pdf_file);
 $stmt->fetch();
 $stmt->close();
 
@@ -71,11 +71,24 @@ $conn->close();
 
     <main class="mx-auto max-w-6xl px-4 py-6">
 
+    
         <!-- Resource Details -->
         <div class="max-w-3xl mx-auto px-4 py-8 mb-6 bg-white shadow rounded-lg">
             <h1 class="text-2xl font-bold mb-4"><?php echo htmlspecialchars($title); ?></h1>
-            <p class="text-gray-700 text-lg"><?php echo htmlspecialchars($detail); ?></p>
-        </div>
+                    <p class="text-gray-700 text-lg mb-4"><?php echo htmlspecialchars($detail); ?></p>
+                
+                    <?php if (!empty($pdf_file)): ?>
+                        <div class="mt-4">
+                            <h3 class="text-lg font-semibold mb-2">Preview:</h3>
+                            <iframe src="<?php echo htmlspecialchars($pdf_file); ?>" class="w-full h-[600px] border rounded-lg"></iframe>
+                            <a href="<?php echo htmlspecialchars($pdf_file); ?>" target="_blank"
+                                class="inline-block mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                                Download PDF
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
 
         <!-- Comment Section -->
         <div class="max-w-3xl mx-auto px-4 py-8 bg-white shadow rounded-lg">
