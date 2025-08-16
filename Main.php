@@ -27,7 +27,7 @@
         <option value="cheatsheet">Cheat Sheet</option>
       </select>
       <button class="bg-indigo-600 text-white px-4 py-2 rounded">Filter</button>
-      <button class="bg-indigo-600 text-white px-4 py-2 rounded">Upload</button>
+      <button class="bg-indigo-600 text-white px-4 py-2 rounded"><a href="Upload.php">Upload</a></button>
     </form>
   </div>
 
@@ -78,7 +78,7 @@
       <a href="#" class="px-3 py-1 border rounded hover:bg-gray-100">3</a>
     </div>
   </div>
- <!-- Header -->
+ <!-- Footer -->
   <?php include 'footer.php' ?>
 </body>
 </html>
