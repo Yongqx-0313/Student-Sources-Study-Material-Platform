@@ -13,8 +13,8 @@
   <!-- Header -->
   <?php include 'header.php' ?>
     <button
-    class="bg-indigo-600 text-white px-4 py-2 rounded">
-    ><a href="Main.php" class="inline-flex items-center gap-1 rounded-lg bg-black/5 px-3 py-1.5 text-sm text-slate-900 hover:bg-black/10">
+    class=" ml-8 mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-black/10">
+    <a href="Main.php" class="">
         <span>←</span> Back
       </a></button>
 
