@@ -4,6 +4,9 @@
     <!-- <img src="img/UCompare1.png" alt="icon" class="logo"> -->
     <div class="flex items-center">
       <nav>
+        <a href="about.php" class="mx-2 hover:text-blue-500">About</a>
+        <!-- <a href="#features" class="mx-2 hover:text-blue-500">Features</a>
+        <a href="#how-it-works" class="mx-2 hover:text-blue-500">How It Works</a> -->
         <a href="Main.php" class="mx-2 hover:text-blue-500">Home</a>
         <!-- <a href="#features" class="mx-2 hover:text-blue-500">Features</a>
         <a href="#how-it-works" class="mx-2 hover:text-blue-500">How It Works</a> -->
