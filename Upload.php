@@ -202,10 +202,10 @@ $conn->close();
                         <label for="course_code" class="mb-1 block text-sm font-medium text-slate-700">Type</label>
                         <select name="type" class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
                             <option value=""></option>
-                            <option value="notes">Notes</option>
-                            <option value="past_paper">Past Paper</option>
-                            <option value="tutorial">Tutorial</option>
-                            <option value="cheatsheet">Cheat Sheet</option>
+                            <option value="Notes">Notes</option>
+                            <option value="Past Paper">Past Paper</option>
+                            <option value="Tutorial">Tutorial</option>
+                            <option value="Cheat Sheet">Cheat Sheet</option>
                         </select>
                         </div>
                     </div>
