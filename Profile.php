@@ -96,24 +96,38 @@ $userResources = $stmt2->get_result();
         </main>
         <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-6 justify-center items-center py-10">
             <?php while ($row = $userResources->fetch_assoc()): ?>
-    <a href="resource.php?id=<?php echo $row['id']; ?>" class="block">
-                <div class="bg-white p-4 rounded shadow">
-                    <div class="text-xs text-gray-500 mb-1">
-                        <?php echo htmlspecialchars($row['code']); ?> •
-                        <?php echo htmlspecialchars($row['session']); ?> •
-                        <?php echo htmlspecialchars($row['type']); ?> •
-                        <?php echo ucfirst($row['visibility']); ?>
+                <div class="bg-white p-4 rounded shadow relative">
+                    <a href="resource.php?id=<?php echo $row['id']; ?>" class="block">
+                        <div class="text-xs text-gray-500 mb-1">
+                            <?php echo htmlspecialchars($row['code']); ?> •
+                            <?php echo htmlspecialchars($row['session']); ?> •
+                            <?php echo htmlspecialchars($row['type']); ?> •
+                            <?php echo ucfirst($row['visibility']); ?>
+                        </div>
+                        <h3 class="font-semibold text-lg">
+                            <?php echo htmlspecialchars($row['title']); ?>
+                        </h3>
+                        <p class="text-sm text-gray-600 mt-1">
+                            <?php echo htmlspecialchars(substr($row['detail'], 0, 60)); ?>...
+                        </p>
+                        <div class="mt-2 text-xs text-gray-500">❤ <?php echo $row['likes']; ?></div>
+                    </a>
+            
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end space-x-2 mt-3">
+                        <a href="edit_resource.php?id=<?php echo $row['id']; ?>"
+                            class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm">
+                            Edit
+                        </a>
+                        <a href="delete_resource.php?id=<?php echo $row['id']; ?>"
+                            onclick="return confirm('Are you sure you want to delete this resource?');"
+                            class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm">
+                            Delete
+                        </a>
                     </div>
-                    <h3 class="font-semibold text-lg">
-                        <?php echo htmlspecialchars($row['title']); ?>
-                    </h3>
-                    <p class="text-sm text-gray-600 mt-1">
-                        <?php echo htmlspecialchars(substr($row['detail'], 0, 60)); ?>...
-                    </p>
-                    <div class="mt-2 text-xs text-gray-500">❤ <?php echo $row['likes']; ?></div>
                 </div>
-            </a>
-      <?php endwhile; ?>
+            <?php endwhile; ?>
+
         </div>
 
     </div>
