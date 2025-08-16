@@ -84,10 +84,11 @@ if (
     $dbFilePath = 'uploads/' . $newFileName;
 
     // ---------- Insert into DB ----------
-    $insertSQL = "INSERT INTO resources (code, session, type, title, detail, pdf_file, visibility)
-                  VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $insertSQL = "INSERT INTO resources (code, session, type, title, detail, pdf_file, visibility, created_by)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $insertStmt = $conn->prepare($insertSQL);
-    $insertStmt->bind_param("sssssss", $code, $session, $type, $title, $detail, $dbFilePath, $visibility);
+    $insertStmt->bind_param("sssssssi", $code, $session, $type, $title, $detail, $dbFilePath, $visibility, $adminID);
+
 
     if ($insertStmt->execute()) {
         header("Location: Main.php?uploaded=1");
@@ -185,28 +186,28 @@ $conn->close();
 
                     <div class="flex">
                         <!-- Session -->
-                         <div class="flex flex-col mr-3">
-                        <label for="course_code" class="mb-1 block text-sm font-medium text-slate-700">Session</label>
-                        <select name="session" class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
-                            <option value=""></option>
-                            <option value="2019/2020">2019/2020</option>
-                            <option value="2020/2021">2020/2021</option>
-                            <option value="2021/2022">2021/2022</option>
-                            <option value="2022/2023">2022/2023</option>
-                            <option value="2023/2024">2023/2024</option>
-                        </select>
-                         </div>
+                        <div class="flex flex-col mr-3">
+                            <label for="course_code" class="mb-1 block text-sm font-medium text-slate-700">Session</label>
+                            <select name="session" class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
+                                <option value=""></option>
+                                <option value="2019/2020">2019/2020</option>
+                                <option value="2020/2021">2020/2021</option>
+                                <option value="2021/2022">2021/2022</option>
+                                <option value="2022/2023">2022/2023</option>
+                                <option value="2023/2024">2023/2024</option>
+                            </select>
+                        </div>
 
                         <!-- Type -->
                         <div class="flex flex-col">
-                        <label for="course_code" class="mb-1 block text-sm font-medium text-slate-700">Type</label>
-                        <select name="type" class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
-                            <option value=""></option>
-                            <option value="Notes">Notes</option>
-                            <option value="Past Paper">Past Paper</option>
-                            <option value="Tutorial">Tutorial</option>
-                            <option value="Cheat Sheet">Cheat Sheet</option>
-                        </select>
+                            <label for="course_code" class="mb-1 block text-sm font-medium text-slate-700">Type</label>
+                            <select name="type" class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
+                                <option value=""></option>
+                                <option value="Notes">Notes</option>
+                                <option value="Past Paper">Past Paper</option>
+                                <option value="Tutorial">Tutorial</option>
+                                <option value="Cheat Sheet">Cheat Sheet</option>
+                            </select>
                         </div>
                     </div>
 

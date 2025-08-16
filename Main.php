@@ -6,7 +6,14 @@ if ($conn->connect_error) {
 }
 
 // Fetch resources
-$sql = "SELECT id, code, session, type, title, detail, author, likes FROM resources";
+$sql = "
+  SELECT r.id, r.code, r.session, r.type, r.title, r.detail, r.likes, u.Name AS author
+  FROM resources r
+  JOIN user u ON r.created_by = u.UserID
+  WHERE r.visibility = 'public'
+  ORDER BY r.id DESC
+";
+
 $result = $conn->query($sql);
 ?>
 
