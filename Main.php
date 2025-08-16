@@ -12,6 +12,7 @@ $conn->set_charset('utf8mb4');
 $q     = trim($_GET['q']    ?? '');   // keyword
 $code  = trim($_GET['code'] ?? '');   // subject code
 $type  = trim($_GET['type'] ?? '');   // Notes | Past Paper | Tutorial | Cheat Sheet
+$sessionFilter = trim($_GET['session'] ?? '');   // Sessions from 2019/2020 until 2023/2024
 
 /* ---------- Pagination (Next always works) ---------- */
 $page    = max(1, (int)($_GET['page'] ?? 1));
@@ -69,6 +70,14 @@ if ($type !== "") {
   $countParams[] = $type;
   $countTypes .= "s";
 }
+// session (exact)
+if ($sessionFilter !== "") {
+  $conds[] = "r.`session` = ?";
+  $params[] = $sessionFilter;
+  $types      .= "s";
+  $countParams[] = $sessionFilter;
+  $countTypes .= "s";
+}
 
 $whereSql = " WHERE " . implode(" AND ", $conds);
 
@@ -100,6 +109,7 @@ function pageUrl($p)
     'q'    => $_GET['q']    ?? '',
     'code' => $_GET['code'] ?? '',
     'type' => $_GET['type'] ?? '',
+    'session' => $_GET['session'] ?? '',
     'page' => max(1, (int)$p),
   ]);
   return "Main.php?$qs";
@@ -142,6 +152,16 @@ function pageUrl($p)
           <option value="Past Paper" <?php if ($type === 'Past Paper')  echo 'selected'; ?>>Past Paper</option>
           <option value="Tutorial" <?php if ($type === 'Tutorial')    echo 'selected'; ?>>Tutorial</option>
           <option value="Cheat Sheet" <?php if ($type === 'Cheat Sheet') echo 'selected'; ?>>Cheat Sheet</option>
+        </select>
+
+        <!-- Session -->
+        <select name="session" class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3">
+          <option value="">Session</option>
+          <option value="2019/2020" <?php if($sessionFilter==='2019/2020') echo 'selected'; ?>>2019/2020</option>
+          <option value="2020/2021" <?php if($sessionFilter==='2020/2021') echo 'selected'; ?>>2020/2021</option>
+          <option value="2021/2022" <?php if($sessionFilter==='2021/2022') echo 'selected'; ?>>2021/2022</option>
+          <option value="2022/2023" <?php if($sessionFilter==='2022/2023') echo 'selected'; ?>>2022/2023</option>
+          <option value="2023/2024" <?php if($sessionFilter==='2023/2024') echo 'selected'; ?>>2023/2024</option>
         </select>
 
         <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded mr-3">Filter</button>
