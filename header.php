@@ -9,12 +9,16 @@
         <a href="#how-it-works" class="mx-2 hover:text-blue-500">How It Works</a> -->
       </nav>
       <div class="flex flex-col md:flex-row">
-      <a href="Profile.php" class="profile-link">
+        <a href="Profile.php" class="profile-link">
           <img src="img/studentprofile.png" alt="profile-picture" class="rounded-full border-2 border-white-300 shadow-lg w-full h-full object-cover profile-picture">
           <!-- <i class="fa-solid fa-user text-2xl" ></i> -->
         </a>
-      <a href="Log In.html"><button class="mx-2 bg-white text-gray-800 px-4 py-2 rounded shadow hover:bg-blue-300">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i>Log Out</button></a>
+        <a href="collection.php" class="mr-6">
+          <i class="fa-solid fa-star text-3xl"></i>
+        </a>
+        
+        <a href="Log In.html"><button class="mx-2 bg-white text-gray-800 px-4 py-2 rounded shadow hover:bg-blue-300">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>Log Out</button></a>
       </div>
     </div>
   </div>
