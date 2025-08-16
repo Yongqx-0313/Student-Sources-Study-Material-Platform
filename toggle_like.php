@@ -26,13 +26,11 @@ $liked = $stmt->num_rows > 0;
 $stmt->close();
 
 if ($liked) {
-    // Unlike
     $stmt = $conn->prepare("DELETE FROM resource_likes WHERE user_id = ? AND resource_id = ?");
     $stmt->bind_param("ii", $userId, $resourceId);
     $stmt->execute();
     $stmt->close();
 
-    // Update resource table
     $stmt = $conn->prepare("UPDATE resources SET likes = GREATEST(likes - 1, 0) WHERE id = ?");
     $stmt->bind_param("i", $resourceId);
     $stmt->execute();
@@ -40,13 +38,11 @@ if ($liked) {
 
     $newLikeStatus = false;
 } else {
-    // Like
     $stmt = $conn->prepare("INSERT INTO resource_likes (user_id, resource_id) VALUES (?, ?)");
     $stmt->bind_param("ii", $userId, $resourceId);
     $stmt->execute();
     $stmt->close();
 
-    // Update resource table
     $stmt = $conn->prepare("UPDATE resources SET likes = likes + 1 WHERE id = ?");
     $stmt->bind_param("i", $resourceId);
     $stmt->execute();

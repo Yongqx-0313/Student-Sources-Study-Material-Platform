@@ -1,4 +1,5 @@
 <?php
+session_start();
 // DB
 $conn = new mysqli("localhost", "root", "", "sssmp");
 if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
