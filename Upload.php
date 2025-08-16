@@ -1,3 +1,44 @@
+<?php
+session_start(); // Start the session
+
+// Check if the user is logged in
+if (!isset($_SESSION['user'])) {
+    header("Location: ../Log In.html"); // Redirect to login page if not logged in
+    exit();
+}
+
+// Access user data from session
+$user = $_SESSION['user'];
+$adminID = $user['UserID']; // Logged-in UserID
+
+// Database connection
+$conn = new mysqli("localhost", "root", "", "sssmp");
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// SQL query to fetch the Name by UserID
+$sql = "SELECT Name FROM user WHERE UserID = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $adminID); // "i" = integer
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Fetch the result
+if ($row = $result->fetch_assoc()) {
+    $name = $row['Name'];  // assign only
+} else {
+    $name = "Unknown";     // fallback if not found
+}
+
+
+$stmt->close();
+$conn->close();
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -64,6 +105,8 @@
                             Public = shown on main page • Private = only on your profile
                         </p>
                     </div>
+                    <br />
+                    <p class="text-lg"><strong>Author: </strong><?php echo ($name); ?></p>
                 </div>
 
                 <!-- RIGHT: fields -->
@@ -75,26 +118,33 @@
                         placeholder="e.g., TSE3042"
                         class="mb-4 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-0 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20" />
 
-                    <!-- Session -->
-                    <label for="course_code" class="mb-1 block text-sm font-medium text-slate-700">Session</label>
-                    <select class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
-                        <option value="">Session</option>
-                        <option value="notes">2019/2020</option>
-                        <option value="past_paper">2020/2021</option>
-                        <option value="tutorial">2021/2022</option>
-                        <option value="cheatsheet">2022/2023</option>
-                        <option value="cheatsheet">2023/2024</option>
-                    </select>
+                    <div class="flex">
+                        <!-- Session -->
+                         <div class="flex flex-col mr-3">
+                        <label for="course_code" class="mb-1 block text-sm font-medium text-slate-700">Session</label>
+                        <select class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
+                            <option value=""></option>
+                            <option value="2019/2020">2019/2020</option>
+                            <option value="2020/2021">2020/2021</option>
+                            <option value="2021/2022">2021/2022</option>
+                            <option value="2022/2023">2022/2023</option>
+                            <option value="2023/2024">2023/2024</option>
+                        </select>
+                         </div>
 
-                    <!-- Type -->
-                    <label for="course_code" class="mb-1 block text-sm font-medium text-slate-700">Type</label>
-                    <select class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
-                        <option value="">-</option>
-                        <option value="notes">Notes</option>
-                        <option value="past_paper">Past Paper</option>
-                        <option value="tutorial">Tutorial</option>
-                        <option value="cheatsheet">Cheat Sheet</option>
-                    </select>
+                        <!-- Type -->
+                        <div class="flex flex-col">
+                        <label for="course_code" class="mb-1 block text-sm font-medium text-slate-700">Type</label>
+                        <select class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
+                            <option value=""></option>
+                            <option value="notes">Notes</option>
+                            <option value="past_paper">Past Paper</option>
+                            <option value="tutorial">Tutorial</option>
+                            <option value="cheatsheet">Cheat Sheet</option>
+                        </select>
+                        </div>
+                    </div>
+
 
                     <!-- Title -->
                     <label for="title" class="mb-1 block text-sm font-medium text-slate-700" required>Title</label>
