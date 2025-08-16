@@ -9,18 +9,22 @@ $q     = trim($_GET['q']    ?? '');   // keyword
 $code  = trim($_GET['code'] ?? '');   // subject code
 $type  = trim($_GET['type'] ?? '');   // Notes | Past Paper | Tutorial | Cheat Sheet
 
-// Base SELECT + JOIN to get uploader name
+// This should come from your session or login logic
+$userID = $_SESSION['userID'] ?? 0;  // fallback to 0 if not logged in
+
+// Base SELECT with liked subquery
 $sqlBase = "SELECT
               r.`id`, r.`code`, r.`session`, r.`type`,
               r.`title`, r.`detail`, r.`likes`,
-              COALESCE(u.`Name`, 'Anonymous') AS author
+              COALESCE(u.`Name`, 'Anonymous') AS author,
+              (SELECT 1 FROM resource_likes WHERE user_id = ? AND resource_id = r.id LIMIT 1) AS liked
             FROM `resources` AS r
             LEFT JOIN `user` AS u ON u.`UserID` = r.`created_by`";
 
-// Always show only public on main page
+// Conditions and params
 $conds   = ["r.`visibility` = 'public'"];
-$params  = [];
-$typestr = "";
+$params  = [$userID]; // userID must be the first param due to liked subquery
+$typestr = "i";        // i = integer for userID
 
 // Keyword search in title/detail/code
 if ($q !== "") {
@@ -30,27 +34,14 @@ if ($q !== "") {
   $typestr .= "sss";
 }
 
-<<<<<<< HEAD
-// Fetch resources
-$sql = "
-  SELECT r.*, u.Name AS author,
-         (SELECT 1 FROM resource_likes WHERE user_id = ? AND resource_id = r.id LIMIT 1) AS liked
-  FROM resources r
-  JOIN user u ON r.created_by = u.UserID
-  WHERE r.visibility = 'public'
-  ORDER BY r.id DESC
-";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $userID);
-=======
-// Subject code (contains match; switch to '=' if you want exact)
+// Filter by subject code
 if ($code !== "") {
   $conds[] = "r.`code` LIKE ?";
   $params[] = "%{$code}%";
   $typestr .= "s";
 }
 
-// Type (exact select)
+// Filter by type
 if ($type !== "") {
   $conds[] = "r.`type` = ?";
   $params[] = $type;
@@ -59,10 +50,11 @@ if ($type !== "") {
 
 $sql = $sqlBase . " WHERE " . implode(" AND ", $conds) . " ORDER BY r.`id` DESC LIMIT 60";
 
-// Prepare + execute
+// Prepare and execute
 $stmt = $conn->prepare($sql) or die("SQL prepare error: " . $conn->error);
-if ($params) { $stmt->bind_param($typestr, ...$params); }
->>>>>>> 34505f035c675750f26cf41b7493518012106e4f
+if ($params) {
+  $stmt->bind_param($typestr, ...$params);
+}
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
