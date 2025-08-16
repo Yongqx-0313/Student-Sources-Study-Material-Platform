@@ -1,6 +1,6 @@
 <header class="sticky top-0 bg-yellow-400 text-black shadow ">
   <div class="container mx-auto px-4 py-2 flex flex-col justify-between items-center md:flex-row">
-    <a href="#" class="text-xl font-bold text-indigo-600">MMU Knowledge Hub</a>
+    <a href="#" class="text-xl font-bold text-indigo-600">Knowledge Hub</a>
     <!-- <img src="img/UCompare1.png" alt="icon" class="logo"> -->
     <div class="flex items-center">
       <nav>
