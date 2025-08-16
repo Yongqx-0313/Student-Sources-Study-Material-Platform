@@ -1,12 +1,26 @@
+<?php
+// Database connection
+$conn = new mysqli("localhost", "root", "", "sssmp");
+if ($conn->connect_error) {
+  die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch resources
+$sql = "SELECT id, code, session, type, title, detail, author, likes FROM resources";
+$result = $conn->query($sql);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MMU Knowledge Hub</title>
   <link rel="stylesheet" href="css/profile.css">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body style="background: linear-gradient(to right, #c6defe, #ffffff);" class=" text-gray-900">
 
 
@@ -16,9 +30,9 @@
   <div class="max-w-7xl mx-auto px-4 py-6">
     <form class="bg-white rounded-lg shadow p-4 flex flex-wrap gap-3">
       <input type="text" placeholder="Search title or description..."
-             class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200" />
+        class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200" />
       <input type="text" placeholder="Subject Code"
-             class="w-32 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200" />
+        class="w-32 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200" />
       <select class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200">
         <option value="">Type</option>
         <option value="notes">Notes</option>
@@ -34,39 +48,27 @@
   <!-- Resource Grid -->
   <div class="max-w-7xl mx-auto px-4 pb-8">
     <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-      
-      <!-- Card -->
-      <div class="bg-white border rounded-lg shadow hover:shadow-md transition p-4 flex flex-col">
-        <div class="text-xs text-gray-500 mb-1">TSE3042 • 2023/2024 • Notes</div>
-        <h2 class="font-semibold text-lg line-clamp-2">Midterm Revision Notes</h2>
-        <p class="text-sm text-gray-600 mt-1 flex-grow">Concise revision notes for Software Engineering midterm exam...</p>
-        <div class="mt-3 flex justify-between text-xs text-gray-500">
-          <span>By John Doe</span>
-          <span>❤️ 12</span>
-        </div>
-      </div>
-
-      <!-- Repeat cards for demo -->
-      <div class="bg-white border rounded-lg shadow hover:shadow-md transition p-4 flex flex-col">
-        <div class="text-xs text-gray-500 mb-1">ICT205 • 2022/2023 • Past Paper</div>
-        <h2 class="font-semibold text-lg line-clamp-2">Final Exam Paper 2023</h2>
-        <p class="text-sm text-gray-600 mt-1 flex-grow">Past year final exam with solutions for reference...</p>
-        <div class="mt-3 flex justify-between text-xs text-gray-500">
-          <span>By Jane Lee</span>
-          <span>❤️ 25</span>
-        </div>
-      </div>
-
-      <div class="bg-white border rounded-lg shadow hover:shadow-md transition p-4 flex flex-col">
-        <div class="text-xs text-gray-500 mb-1">MAT101 • 2023/2024 • Tutorial</div>
-        <h2 class="font-semibold text-lg line-clamp-2">Tutorial Set 5 with Answers</h2>
-        <p class="text-sm text-gray-600 mt-1 flex-grow">Fully worked solutions for calculus tutorial questions...</p>
-        <div class="mt-3 flex justify-between text-xs text-gray-500">
-          <span>By Alan Turing</span>
-          <span>❤️ 8</span>
-        </div>
-      </div>
-
+      <?php while ($row = $result->fetch_assoc()): ?>
+        <a href="resource.php?id=<?php echo $row['id']; ?>" class="block">
+          <div class="bg-white border rounded-lg shadow hover:shadow-md transition p-4 flex flex-col cursor-pointer">
+            <div class="text-xs text-gray-500 mb-1">
+              <?php echo htmlspecialchars($row['code']); ?> •
+              <?php echo htmlspecialchars($row['session']); ?> •
+              <?php echo htmlspecialchars($row['type']); ?>
+            </div>
+            <h2 class="font-semibold text-lg line-clamp-2">
+              <?php echo htmlspecialchars($row['title']); ?>
+            </h2>
+            <p class="text-sm text-gray-600 mt-1 flex-grow">
+              <?php echo htmlspecialchars(substr($row['detail'], 0, 60)); ?>...
+            </p>
+            <div class="mt-3 flex justify-between text-xs text-gray-500">
+              <span>By <?php echo htmlspecialchars($row['author']); ?></span>
+              <span>❤ <?php echo $row['likes']; ?></span>
+            </div>
+          </div>
+        </a>
+      <?php endwhile; ?>
     </div>
   </div>
 
@@ -78,7 +80,8 @@
       <a href="#" class="px-3 py-1 border rounded hover:bg-gray-100">3</a>
     </div>
   </div>
- <!-- Footer -->
+  <!-- Footer -->
   <?php include 'footer.php' ?>
 </body>
+
 </html>
