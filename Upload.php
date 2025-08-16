@@ -19,24 +19,89 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// SQL query to fetch the Name by UserID
+// Optional: Fetch user's name (if needed)
 $sql = "SELECT Name FROM user WHERE UserID = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $adminID); // "i" = integer
+$stmt->bind_param("i", $adminID);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Fetch the result
 if ($row = $result->fetch_assoc()) {
-    $name = $row['Name'];  // assign only
+    $name = $row['Name'];
 } else {
-    $name = "Unknown";     // fallback if not found
+    $name = "Unknown";
+}
+$stmt->close();
+
+// ---------- Handle Upload ----------
+if (
+    isset($_POST['course_code'], $_POST['session'], $_POST['type'], $_POST['title'], $_POST['description'], $_POST['visibility']) &&
+    isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK
+) {
+    $code       = $_POST['course_code'];
+    $session    = $_POST['session'];
+    $type       = $_POST['type'];
+    $title      = $_POST['title'];
+    $detail     = $_POST['description'];
+    $visibility = $_POST['visibility'] === 'private' ? 'private' : 'public';
+
+    // ---------- File Validation ----------
+    $allowedExt  = ['pdf', 'doc', 'docx'];
+    $allowedMime = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+
+    $tmpPath = $_FILES['file']['tmp_name'];
+    $fileName = $_FILES['file']['name'];
+    $fileSize = $_FILES['file']['size'];
+    $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+    $fileMime = mime_content_type($tmpPath);
+
+    if (!in_array($fileExt, $allowedExt) || !in_array($fileMime, $allowedMime)) {
+        die("Invalid file type.");
+    }
+
+    if ($fileSize > 20 * 1024 * 1024) {
+        die("File too large (20MB max).");
+    }
+
+    // ---------- Save File ----------
+    $uploadDir = __DIR__ . '/uploads';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0775, true);
+    }
+
+    $safeFileName = preg_replace('/[^A-Za-z0-9_\-]/', '_', pathinfo($fileName, PATHINFO_FILENAME));
+    $newFileName = $safeFileName . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $fileExt;
+    $destination = $uploadDir . '/' . $newFileName;
+
+    if (!move_uploaded_file($tmpPath, $destination)) {
+        die("Failed to move uploaded file.");
+    }
+
+    $dbFilePath = 'uploads/' . $newFileName;
+
+    // ---------- Insert into DB ----------
+    $insertSQL = "INSERT INTO resources (code, session, type, title, detail, pdf_file, visibility)
+                  VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $insertStmt = $conn->prepare($insertSQL);
+    $insertStmt->bind_param("sssssss", $code, $session, $type, $title, $detail, $dbFilePath, $visibility);
+
+    if ($insertStmt->execute()) {
+        header("Location: Main.php?uploaded=1");
+        exit();
+    } else {
+        echo "Insert failed: " . $insertStmt->error;
+    }
+
+    $insertStmt->close();
 }
 
-
-$stmt->close();
 $conn->close();
 ?>
+
 
 
 <!DOCTYPE html>
@@ -64,7 +129,7 @@ $conn->close();
     <main class="mx-auto max-w-6xl px-4 py-6">
         <h1 class="mb-4 text-2xl font-semibold">Upload Study Material</h1>
 
-        <form action="api/upload_material.php" method="POST" enctype="multipart/form-data"
+        <form action="Upload.php" method="POST" enctype="multipart/form-data"
             class="rounded-2xl bg-white p-6 shadow-xl">
             <!-- Grid -->
             <div class="grid gap-6 md:grid-cols-[290px,1fr]">
@@ -122,7 +187,7 @@ $conn->close();
                         <!-- Session -->
                          <div class="flex flex-col mr-3">
                         <label for="course_code" class="mb-1 block text-sm font-medium text-slate-700">Session</label>
-                        <select class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
+                        <select name="session" class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
                             <option value=""></option>
                             <option value="2019/2020">2019/2020</option>
                             <option value="2020/2021">2020/2021</option>
@@ -135,7 +200,7 @@ $conn->close();
                         <!-- Type -->
                         <div class="flex flex-col">
                         <label for="course_code" class="mb-1 block text-sm font-medium text-slate-700">Type</label>
-                        <select class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
+                        <select name="type" class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mb-3">
                             <option value=""></option>
                             <option value="notes">Notes</option>
                             <option value="past_paper">Past Paper</option>
