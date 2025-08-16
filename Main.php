@@ -3,7 +3,9 @@ session_start();
 
 /* ---------- DB ---------- */
 $conn = new mysqli("localhost", "root", "", "sssmp");
-if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
+if ($conn->connect_error) {
+  die("Connection failed: " . $conn->connect_error);
+}
 $conn->set_charset('utf8mb4');
 
 /* ---------- Filters from URL ---------- */
@@ -26,14 +28,20 @@ $sqlBase = "SELECT
               COALESCE(u.`Name`, 'Anonymous') AS author,
               (SELECT 1 FROM resource_likes rl
                  WHERE rl.user_id = ? AND rl.resource_id = r.id
-                 LIMIT 1) AS liked
+                 LIMIT 1) AS liked,
+              (SELECT 1 FROM collected c
+                 WHERE c.user_id = ? AND c.resource_id = r.id
+                 LIMIT 1) AS collected
             FROM `resources` AS r
             LEFT JOIN `user` AS u ON u.`UserID` = r.`created_by`";
 
+
 /* ---------- Build WHERE + params (we keep a 2nd set for COUNT) ---------- */
 $conds        = ["r.`visibility` = 'public'"];
-$params       = [$userID];  $types      = "i";   // first param is userID for liked subquery
-$countParams  = [];         $countTypes = "";    // COUNT(*) doesn't need userID
+$params       = [$userID, $userID];
+$types      = "ii";   // first param is userID for liked subquery
+$countParams  = [];
+$countTypes = "";    // COUNT(*) doesn't need userID
 
 // keyword search (title/detail/code)
 if ($q !== "") {
@@ -48,14 +56,18 @@ if ($q !== "") {
 if ($code !== "") {
   $conds[] = "r.`code` LIKE ?";
   $v = "%{$code}%";
-  $params[] = $v;        $types      .= "s";
-  $countParams[] = $v;   $countTypes .= "s";
+  $params[] = $v;
+  $types      .= "s";
+  $countParams[] = $v;
+  $countTypes .= "s";
 }
 // type (exact)
 if ($type !== "") {
   $conds[] = "r.`type` = ?";
-  $params[] = $type;     $types      .= "s";
-  $countParams[] = $type;$countTypes .= "s";
+  $params[] = $type;
+  $types      .= "s";
+  $countParams[] = $type;
+  $countTypes .= "s";
 }
 
 $whereSql = " WHERE " . implode(" AND ", $conds);
@@ -63,7 +75,9 @@ $whereSql = " WHERE " . implode(" AND ", $conds);
 /* ---------- 1) Count total rows for page numbers ---------- */
 $countSql = "SELECT COUNT(*) AS cnt FROM `resources` r" . $whereSql;
 $countStmt = $conn->prepare($countSql) or die("COUNT prepare error: " . $conn->error);
-if ($countParams) { $countStmt->bind_param($countTypes, ...$countParams); }
+if ($countParams) {
+  $countStmt->bind_param($countTypes, ...$countParams);
+}
 $countStmt->execute();
 $totalRows  = (int)($countStmt->get_result()->fetch_assoc()['cnt'] ?? 0);
 $totalPages = max(1, (int)ceil($totalRows / $perPage));
@@ -73,12 +87,15 @@ $totalPages = max(1, (int)ceil($totalRows / $perPage));
 /* ---------- 2) Fetch current page (may be empty if beyond last page) ---------- */
 $sql = $sqlBase . $whereSql . " ORDER BY r.`id` DESC LIMIT {$perPage} OFFSET {$offset}";
 $stmt = $conn->prepare($sql) or die("SQL prepare error: " . $conn->error);
-if ($params) { $stmt->bind_param($types, ...$params); }
+if ($params) {
+  $stmt->bind_param($types, ...$params);
+}
 $stmt->execute();
 $result = $stmt->get_result();
 
 /* ---------- Helper: keep filters in pagination links ---------- */
-function pageUrl($p) {
+function pageUrl($p)
+{
   $qs = http_build_query([
     'q'    => $_GET['q']    ?? '',
     'code' => $_GET['code'] ?? '',
@@ -101,42 +118,27 @@ function pageUrl($p) {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
 </head>
 <script>
-  document.addEventListener('click', async function(e) {
-    const btn = e.target.closest('.collect-btn');
-    if (!btn) return;
-
+document.querySelectorAll('.star-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
     const resourceId = btn.dataset.id;
-    console.log("Star clicked: ", resourceId);
-
-    try {
-      const res = await fetch('toggle_collect.php', {
-        method: 'POST',
-        credentials: 'same-origin', // 🔥 THIS IS THE FIX!
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `resource_id=${resourceId}`
-      });
-
-
-      if (!res.ok) throw new Error("HTTP error: " + res.status);
-
-      const data = await res.json();
-      console.log("Collect response:", data); // ✅ See if it’s working
-
-      if (data && typeof data.collected !== 'undefined') {
-        btn.classList.toggle('text-yellow-400', data.collected);
-        btn.classList.toggle('text-gray-400', !data.collected);
-        btn.setAttribute('aria-pressed', data.collected);
+    fetch('toggle_collect.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `resource_id=${resourceId}`
+    })
+    .then(res => res.json())
+    .then(data => {
+      const icon = btn.querySelector('i');
+      if (data.status === 'collected') {
+        icon.classList.remove('fa-regular', 'text-gray-400');
+        icon.classList.add('fa-solid', 'text-yellow-400');
       } else {
-        console.warn("Unexpected data:", data);
+        icon.classList.remove('fa-solid', 'text-yellow-400');
+        icon.classList.add('fa-regular', 'text-gray-400');
       }
-    } catch (err) {
-      alert("Failed to toggle collect.");
-      console.error("Collect error:", err);
-    }
+    });
   });
+});
 </script>
 
 
@@ -187,10 +189,8 @@ function pageUrl($p) {
               <?php echo htmlspecialchars($row['session']); ?> •
               <?php echo htmlspecialchars($row['type']); ?>
             </div>
-            <div> <button class="collect-btn <?= $row['collected'] ? 'text-yellow-400' : 'text-gray-400' ?>"
-                data-id="<?= $row['id'] ?>"
-                aria-pressed="<?= $row['collected'] ? 'true' : 'false' ?>">
-                <i class="fa-star fa-regular"></i>
+            <div> <button class="star-btn" data-id="<?= $row['id'] ?>">
+                <i class="<?= $row['collected'] ? 'fa-solid text-yellow-400' : 'fa-regular text-gray-400' ?> fa-star"></i>
               </button>
             </div>
           </div>
@@ -220,29 +220,29 @@ function pageUrl($p) {
   <div class="max-w-7xl mx-auto px-4 pb-8">
     <div class="flex justify-center gap-2">
       <!-- Prev: always goes back, minimum page 1 -->
-      <a href="<?php echo pageUrl(max(1, $page-1)); ?>"
-         class="px-3 py-1 border rounded hover:bg-gray-100">Prev</a>
+      <a href="<?php echo pageUrl(max(1, $page - 1)); ?>"
+        class="px-3 py-1 border rounded hover:bg-gray-100">Prev</a>
 
       <!-- Page numbers (window up to 5 around current) -->
       <?php
-        $start = max(1, $page - 2);
-        $end   = min($totalPages, $page + 2);
-        if ($end - $start < 4) {
-          $start = max(1, min($start, $end - 4));
-          $end   = min($totalPages, max($end, $start + 4));
-        }
-        for ($p = $start; $p <= $end; $p++):
+      $start = max(1, $page - 2);
+      $end   = min($totalPages, $page + 2);
+      if ($end - $start < 4) {
+        $start = max(1, min($start, $end - 4));
+        $end   = min($totalPages, max($end, $start + 4));
+      }
+      for ($p = $start; $p <= $end; $p++):
       ?>
         <a href="<?php echo pageUrl($p); ?>"
-           aria-current="<?php echo ($p==$page)?'page':'false'; ?>"
-           class="px-3 py-1 border rounded <?php echo ($p==$page)?'bg-indigo-600 text-white':'hover:bg-gray-100'; ?>">
+          aria-current="<?php echo ($p == $page) ? 'page' : 'false'; ?>"
+          class="px-3 py-1 border rounded <?php echo ($p == $page) ? 'bg-indigo-600 text-white' : 'hover:bg-gray-100'; ?>">
           <?php echo $p; ?>
         </a>
       <?php endfor; ?>
 
       <!-- Next: ALWAYS advances, even if the next page is empty -->
-      <a href="<?php echo pageUrl($page+1); ?>"
-         class="px-3 py-1 border rounded hover:bg-gray-100">Next</a>
+      <a href="<?php echo pageUrl($page + 1); ?>"
+        class="px-3 py-1 border rounded hover:bg-gray-100">Next</a>
     </div>
 
     <p class="mt-3 text-center text-xs text-slate-500">

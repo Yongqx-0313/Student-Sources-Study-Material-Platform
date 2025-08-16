@@ -1,43 +1,42 @@
 <?php
 session_start();
-header('Content-Type: application/json');
-
-if (!isset($_SESSION['userID'])) {
-    echo json_encode(['error' => 'Not logged in']);
-    exit;
+if (!isset($_SESSION['user'])) {
+    http_response_code(401); // Unauthorized
+    exit("Not logged in");
 }
-
-$userId = $_SESSION['userID'];
-$resourceId = isset($_POST['resource_id']) ? (int)$_POST['resource_id'] : 0;
 
 $conn = new mysqli("localhost", "root", "", "sssmp");
 if ($conn->connect_error) {
-    echo json_encode(['error' => 'DB error']);
-    exit;
+    http_response_code(500);
+    exit("DB connection failed");
+}
+
+$userID = $_SESSION['user']['UserID'] ?? null;
+
+$resourceID = (int)($_POST['resource_id'] ?? 0);
+
+if ($resourceID === 0) {
+    http_response_code(400);
+    exit("Invalid resource ID");
 }
 
 // Check if already collected
-$stmt = $conn->prepare("SELECT id FROM collected WHERE user_id = ? AND resource_id = ?");
-$stmt->bind_param("ii", $userId, $resourceId);
+$sql = "SELECT * FROM collected WHERE user_id = ? AND resource_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ii", $userID, $resourceID);
 $stmt->execute();
-$stmt->store_result();
+$result = $stmt->get_result();
 
-$alreadyCollected = $stmt->num_rows > 0;
-$stmt->close();
-
-if ($alreadyCollected) {
-    $stmt = $conn->prepare("DELETE FROM collected WHERE user_id = ? AND resource_id = ?");
-    $stmt->bind_param("ii", $userId, $resourceId);
-    $stmt->execute();
-    $stmt->close();
-    $collected = false;
+if ($result->num_rows > 0) {
+    // Already collected → remove it
+    $conn->query("DELETE FROM collected WHERE user_id = $userID AND resource_id = $resourceID");
+    echo json_encode(["status" => "uncollected"]);
 } else {
-    $stmt = $conn->prepare("INSERT INTO collected (user_id, resource_id) VALUES (?, ?)");
-    $stmt->bind_param("ii", $userId, $resourceId);
+    // Not collected → insert
+    $sql = "INSERT INTO collected (user_id, resource_id, created_at) VALUES (?, ?, NOW())";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $userID, $resourceID);
     $stmt->execute();
-    $stmt->close();
-    $collected = true;
+    echo json_encode(["status" => "collected"]);
 }
-
-echo json_encode(['collected' => $collected]);
 ?>

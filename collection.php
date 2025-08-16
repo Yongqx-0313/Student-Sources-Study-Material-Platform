@@ -31,11 +31,13 @@ $stmt->close();
 // --- Get user's uploaded resources (public + private) ---
 $sql2 = "
     SELECT r.id, r.code, r.session, r.type, r.title, r.detail, r.likes, r.visibility, u.Name AS author
-    FROM resources r
+    FROM collected c
+    JOIN resources r ON c.resource_id = r.id
     JOIN user u ON r.created_by = u.UserID
-    WHERE r.created_by = ?
-    ORDER BY r.id DESC
+    WHERE c.user_id = ?
+    ORDER BY c.created_at DESC
 ";
+
 $stmt2 = $conn->prepare($sql2);
 $stmt2->bind_param("i", $userID);
 $stmt2->execute();
