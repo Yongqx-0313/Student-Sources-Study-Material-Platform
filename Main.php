@@ -123,30 +123,33 @@ function pageUrl($p)
   <?php include 'header.php' ?>
   <!-- Search & Filters -->
   <div class="max-w-7xl mx-auto px-4 py-6">
-    <form method="get" action="Main.php" class="bg-white rounded-lg shadow p-4 flex flex-wrap gap-3">
+    <form method="get" action="Main.php" class="bg-white rounded-lg shadow p-4 flex flex-wrap gap-3 justify-between">
+      <div>
+        <!-- Keyword -->
+        <input name="q" value="<?php echo htmlspecialchars($q); ?>"
+          type="text" placeholder="Search title or description..."
+          class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3" />
 
-      <!-- Keyword -->
-      <input name="q" value="<?php echo htmlspecialchars($q); ?>"
-        type="text" placeholder="Search title or description..."
-        class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200" />
+        <!-- Subject code -->
+        <input name="code" value="<?php echo htmlspecialchars($code); ?>"
+          type="text" placeholder="Subject Code"
+          class="w-40 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3" />
 
-      <!-- Subject code -->
-      <input name="code" value="<?php echo htmlspecialchars($code); ?>"
-        type="text" placeholder="Subject Code"
-        class="w-40 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200" />
+        <!-- Type -->
+        <select name="type" class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3">
+          <option value="">Type</option>
+          <option value="Notes" <?php if ($type === 'Notes')       echo 'selected'; ?>>Notes</option>
+          <option value="Past Paper" <?php if ($type === 'Past Paper')  echo 'selected'; ?>>Past Paper</option>
+          <option value="Tutorial" <?php if ($type === 'Tutorial')    echo 'selected'; ?>>Tutorial</option>
+          <option value="Cheat Sheet" <?php if ($type === 'Cheat Sheet') echo 'selected'; ?>>Cheat Sheet</option>
+        </select>
 
-      <!-- Type -->
-      <select name="type" class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200">
-        <option value="">Type</option>
-        <option value="Notes" <?php if ($type === 'Notes')       echo 'selected'; ?>>Notes</option>
-        <option value="Past Paper" <?php if ($type === 'Past Paper')  echo 'selected'; ?>>Past Paper</option>
-        <option value="Tutorial" <?php if ($type === 'Tutorial')    echo 'selected'; ?>>Tutorial</option>
-        <option value="Cheat Sheet" <?php if ($type === 'Cheat Sheet') echo 'selected'; ?>>Cheat Sheet</option>
-      </select>
-
-      <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded">Filter</button>
-      <a href="Main.php" class="px-4 py-2 rounded border">Clear</a>
-      <a href="Upload.php" class="bg-indigo-600 text-white px-4 py-2 rounded">Upload</a>
+        <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded mr-3">Filter</button>
+        <a href="Main.php" class="px-4 py-2 rounded border">Clear</a>
+      </div>
+      <div class="flex">
+        <a href="Upload.php" class="bg-indigo-600 text-white px-4 py-2 rounded">Upload</a>
+      </div>
     </form>
   </div>
 
@@ -155,7 +158,7 @@ function pageUrl($p)
     <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
       <?php while ($row = $result->fetch_assoc()): ?>
 
-        <div class="bg-white border rounded-lg shadow hover:shadow-md transition p-4 flex flex-col cursor-pointer">
+        <div class="bg-white border rounded-lg shadow hover:shadow-md transition p-4 flex flex-col justify-between cursor-pointer">
 
           <div class="text-xs text-gray-500 mb-1 flex justify-between">
             <div>
@@ -169,17 +172,17 @@ function pageUrl($p)
                 aria-pressed="<?= $row['collected'] ? 'true' : 'false' ?>">
                 <i class="fa-star <?= $row['collected'] ? 'fa-solid' : 'fa-regular' ?>"></i>
               </button>
-
             </div>
           </div>
           <a href="resource.php?id=<?php echo $row['id']; ?>">
             <h2 class="font-semibold text-lg line-clamp-2">
               <?php echo htmlspecialchars($row['title']); ?>
             </h2>
-            <p class="text-sm text-gray-600 mt-1 flex-grow">
-              <?php echo htmlspecialchars(substr($row['detail'], 0, 60)); ?>...
-            </p>
           </a>
+          <p class="text-sm text-gray-600 mt-1 flex-grow">
+            <?php echo htmlspecialchars(substr($row['detail'], 0, 60)); ?>...
+          </p>
+
           <div class="mt-3 flex justify-between text-xs text-gray-500">
             <span>By <?php echo htmlspecialchars($row['author']); ?></span>
             <button class="like-btn <?= $row['liked'] ? 'text-red-500' : 'text-gray-500' ?>"
@@ -187,7 +190,6 @@ function pageUrl($p)
               aria-pressed="<?= $row['liked'] ? 'true' : 'false' ?>">
               ❤ <span class="like-count"><?= $row['likes'] ?></span>
             </button>
-
           </div>
         </div>
       <?php endwhile; ?>
@@ -265,35 +267,37 @@ function pageUrl($p)
   });
 </script>
 <script>
-document.querySelectorAll('.collect-btn').forEach(button => {
-  button.addEventListener('click', function () {
-    const resourceId = this.dataset.id;
-    const isCollected = this.getAttribute('aria-pressed') === 'true';
+  document.querySelectorAll('.collect-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const resourceId = this.dataset.id;
+      const isCollected = this.getAttribute('aria-pressed') === 'true';
 
-    fetch('toggle_collect.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `resource_id=${resourceId}&action=${isCollected ? 'uncollect' : 'collect'}`
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        const icon = this.querySelector('i');
-        this.setAttribute('aria-pressed', data.collected ? 'true' : 'false');
+      fetch('toggle_collect.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: `resource_id=${resourceId}&action=${isCollected ? 'uncollect' : 'collect'}`
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            const icon = this.querySelector('i');
+            this.setAttribute('aria-pressed', data.collected ? 'true' : 'false');
 
-        // Toggle color
-        this.classList.toggle('text-yellow-400', data.collected);
-        this.classList.toggle('text-gray-400', !data.collected);
+            // Toggle color
+            this.classList.toggle('text-yellow-400', data.collected);
+            this.classList.toggle('text-gray-400', !data.collected);
 
-        // Toggle icon style
-        icon.classList.toggle('fa-solid', data.collected);
-        icon.classList.toggle('fa-regular', !data.collected);
-      } else {
-        alert("Action failed: " + data.message);
-      }
-    }).catch(err => {
-      console.error("AJAX error:", err);
+            // Toggle icon style
+            icon.classList.toggle('fa-solid', data.collected);
+            icon.classList.toggle('fa-regular', !data.collected);
+          } else {
+            alert("Action failed: " + data.message);
+          }
+        }).catch(err => {
+          console.error("AJAX error:", err);
+        });
     });
   });
-});
 </script>
