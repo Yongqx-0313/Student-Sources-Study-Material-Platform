@@ -1,71 +1,93 @@
 <?php
 session_start();
-// DB
+
+/* ---------- DB ---------- */
 $conn = new mysqli("localhost", "root", "", "sssmp");
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
+if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
 $conn->set_charset('utf8mb4');
 
-// Read filters from the URL
+/* ---------- Filters from URL ---------- */
 $q     = trim($_GET['q']    ?? '');   // keyword
 $code  = trim($_GET['code'] ?? '');   // subject code
 $type  = trim($_GET['type'] ?? '');   // Notes | Past Paper | Tutorial | Cheat Sheet
 
-// This should come from your session or login logic
-$userID = $_SESSION['userID'] ?? 0;  // fallback to 0 if not logged in
+/* ---------- Pagination (Next always works) ---------- */
+$page    = max(1, (int)($_GET['page'] ?? 1));
+$perPage = 6;                           // change page size here
+$offset  = ($page - 1) * $perPage;
 
-// Base SELECT with liked subquery
+/* ---------- Current user (for liked status) ---------- */
+$userID = $_SESSION['userID'] ?? 0;     // make sure your login sets this
+
+/* ---------- Base SELECT with JOIN + liked subquery ---------- */
 $sqlBase = "SELECT
               r.`id`, r.`code`, r.`session`, r.`type`,
               r.`title`, r.`detail`, r.`likes`,
               COALESCE(u.`Name`, 'Anonymous') AS author,
-              (SELECT 1 FROM resource_likes WHERE user_id = ? AND resource_id = r.id LIMIT 1) AS liked,
-              (SELECT 1 FROM collected WHERE user_id = ? AND resource_id = r.id LIMIT 1) AS collected
+              (SELECT 1 FROM resource_likes rl
+                 WHERE rl.user_id = ? AND rl.resource_id = r.id
+                 LIMIT 1) AS liked
             FROM `resources` AS r
             LEFT JOIN `user` AS u ON u.`UserID` = r.`created_by`";
 
+/* ---------- Build WHERE + params (we keep a 2nd set for COUNT) ---------- */
+$conds        = ["r.`visibility` = 'public'"];
+$params       = [$userID];  $types      = "i";   // first param is userID for liked subquery
+$countParams  = [];         $countTypes = "";    // COUNT(*) doesn't need userID
 
-// Conditions and params
-$conds   = ["r.`visibility` = 'public'"];
-$params  = [$userID, $userID]; // userID must be the first param due to liked subquery
-$typestr = "ii";        // i = integer for userID
-
-// Keyword search in title/detail/code
+// keyword search (title/detail/code)
 if ($q !== "") {
   $conds[] = "(r.`title` LIKE ? OR r.`detail` LIKE ? OR r.`code` LIKE ?)";
   $like = "%{$q}%";
-  $params[] = $like;
-  $params[] = $like;
-  $params[] = $like;
-  $typestr .= "sss";
+  array_push($params, $like, $like, $like);
+  array_push($countParams, $like, $like, $like);
+  $types      .= "sss";
+  $countTypes .= "sss";
 }
-
-// Filter by subject code
+// subject code (contains)
 if ($code !== "") {
   $conds[] = "r.`code` LIKE ?";
-  $params[] = "%{$code}%";
-  $typestr .= "s";
+  $v = "%{$code}%";
+  $params[] = $v;        $types      .= "s";
+  $countParams[] = $v;   $countTypes .= "s";
 }
-
-// Filter by type
+// type (exact)
 if ($type !== "") {
   $conds[] = "r.`type` = ?";
-  $params[] = $type;
-  $typestr .= "s";
+  $params[] = $type;     $types      .= "s";
+  $countParams[] = $type;$countTypes .= "s";
 }
 
-$sql = $sqlBase . " WHERE " . implode(" AND ", $conds) . " ORDER BY r.`id` DESC LIMIT 60";
+$whereSql = " WHERE " . implode(" AND ", $conds);
 
-// Prepare and execute
+/* ---------- 1) Count total rows for page numbers ---------- */
+$countSql = "SELECT COUNT(*) AS cnt FROM `resources` r" . $whereSql;
+$countStmt = $conn->prepare($countSql) or die("COUNT prepare error: " . $conn->error);
+if ($countParams) { $countStmt->bind_param($countTypes, ...$countParams); }
+$countStmt->execute();
+$totalRows  = (int)($countStmt->get_result()->fetch_assoc()['cnt'] ?? 0);
+$totalPages = max(1, (int)ceil($totalRows / $perPage));
+// NOTE: we do NOT clamp $page down to $totalPages on purpose,
+// so users can click Next into empty pages
+
+/* ---------- 2) Fetch current page (may be empty if beyond last page) ---------- */
+$sql = $sqlBase . $whereSql . " ORDER BY r.`id` DESC LIMIT {$perPage} OFFSET {$offset}";
 $stmt = $conn->prepare($sql) or die("SQL prepare error: " . $conn->error);
-if ($params) {
-  $stmt->bind_param($typestr, ...$params);
-}
+if ($params) { $stmt->bind_param($types, ...$params); }
 $stmt->execute();
 $result = $stmt->get_result();
-?>
 
+/* ---------- Helper: keep filters in pagination links ---------- */
+function pageUrl($p) {
+  $qs = http_build_query([
+    'q'    => $_GET['q']    ?? '',
+    'code' => $_GET['code'] ?? '',
+    'type' => $_GET['type'] ?? '',
+    'page' => max(1, (int)$p),
+  ]);
+  return "Main.php?$qs";
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -197,11 +219,37 @@ $result = $stmt->get_result();
   <!-- Pagination -->
   <div class="max-w-7xl mx-auto px-4 pb-8">
     <div class="flex justify-center gap-2">
-      <a href="#" class="px-3 py-1 border rounded bg-indigo-600 text-white">1</a>
-      <a href="#" class="px-3 py-1 border rounded hover:bg-gray-100">2</a>
-      <a href="#" class="px-3 py-1 border rounded hover:bg-gray-100">3</a>
+      <!-- Prev: always goes back, minimum page 1 -->
+      <a href="<?php echo pageUrl(max(1, $page-1)); ?>"
+         class="px-3 py-1 border rounded hover:bg-gray-100">Prev</a>
+
+      <!-- Page numbers (window up to 5 around current) -->
+      <?php
+        $start = max(1, $page - 2);
+        $end   = min($totalPages, $page + 2);
+        if ($end - $start < 4) {
+          $start = max(1, min($start, $end - 4));
+          $end   = min($totalPages, max($end, $start + 4));
+        }
+        for ($p = $start; $p <= $end; $p++):
+      ?>
+        <a href="<?php echo pageUrl($p); ?>"
+           aria-current="<?php echo ($p==$page)?'page':'false'; ?>"
+           class="px-3 py-1 border rounded <?php echo ($p==$page)?'bg-indigo-600 text-white':'hover:bg-gray-100'; ?>">
+          <?php echo $p; ?>
+        </a>
+      <?php endfor; ?>
+
+      <!-- Next: ALWAYS advances, even if the next page is empty -->
+      <a href="<?php echo pageUrl($page+1); ?>"
+         class="px-3 py-1 border rounded hover:bg-gray-100">Next</a>
     </div>
+
+    <p class="mt-3 text-center text-xs text-slate-500">
+      Page <?php echo $page; ?> · <?php echo $totalRows; ?> result(s) · <?php echo $totalPages; ?> page(s)
+    </p>
   </div>
+
   <!-- Footer -->
   <?php include 'footer.php' ?>
 </body>
