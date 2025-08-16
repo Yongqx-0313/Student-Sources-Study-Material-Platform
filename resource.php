@@ -46,12 +46,13 @@ if (!$title) {
         </a>
     </button>
 
-    <div class="max-w-3xl mx-auto px-4 py-8 bg-white shadow rounded-lg">
-        <!-- Title and Details -->
-        <h1 class="text-2xl font-bold mb-4"><?php echo htmlspecialchars($title); ?></h1>
-        <p class="text-gray-700 text-lg"><?php echo htmlspecialchars($detail); ?></p>
-    </div>
-
+    <main class="mx-auto max-w-6xl px-4 py-6">
+        <div class="max-w-3xl mx-auto px-4 py-8 bg-white shadow rounded-lg">
+            <!-- Title and Details -->
+            <h1 class="text-2xl font-bold mb-4"><?php echo htmlspecialchars($title); ?></h1>
+            <p class="text-gray-700 text-lg"><?php echo htmlspecialchars($detail); ?></p>
+        </div>
+    </main>
     <!-- Header -->
     <?php include 'footer.php' ?>
 </body>
