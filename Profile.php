@@ -1,24 +1,22 @@
 <?php
 session_start(); // Start the session
 
+// Check login
+if (!isset($_SESSION['user'])) {
+    header("Location: ../Log In.html");
+    exit();
+}
+
 // Database connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "sssmp";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
+$conn = new mysqli("localhost", "root", "", "sssmp");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch user information
-$userID = $_SESSION['user']['UserID']; // UserID is already stored in the session
+$userID = $_SESSION['user']['UserID']; // Logged-in user ID
 $userData = [];
 
-
+// --- Get user info ---
 $sql = "SELECT * FROM user WHERE UserID = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $userID);
@@ -26,12 +24,24 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
-    $userData = $result->fetch_assoc();
+    $userData = $result->fetch_assoc(); // contains Name, Email, etc.
 }
-
 $stmt->close();
-$conn->close();
+
+// --- Get user's uploaded resources (public + private) ---
+$sql2 = "
+    SELECT r.id, r.code, r.session, r.type, r.title, r.detail, r.likes, r.visibility, u.Name AS author
+    FROM resources r
+    JOIN user u ON r.created_by = u.UserID
+    WHERE r.created_by = ?
+    ORDER BY r.id DESC
+";
+$stmt2 = $conn->prepare($sql2);
+$stmt2->bind_param("i", $userID);
+$stmt2->execute();
+$userResources = $stmt2->get_result();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -46,14 +56,14 @@ $conn->close();
 </head>
 
 
-<body 
-style="background: linear-gradient(to right, #c6defe, #ffffff);"
-class="min-h-screen">
+<body
+    style="background: linear-gradient(to right, #c6defe, #ffffff);"
+    class="min-h-screen">
     <!-- Header -->
     <?php include 'header.php' ?>
 
     <!-- Main Section -->
-    <div class="flex justify-center items-center py-10 profile">
+    <div class="flex flex-col justify-center items-center py-10 profile">
         <main class="bg-white shadow-md rounded-lg p-6 max-w-3xl w-full">
             <!-- Profile Container -->
             <div class="flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8">
@@ -78,12 +88,34 @@ class="min-h-screen">
                             <button class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition">
                                 Edit Profile
                             </button>
-                            
+
                         </a>
                     </div>
                 </div>
             </div>
         </main>
+        <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-6 justify-center items-center py-10">
+            <?php while ($row = $userResources->fetch_assoc()): ?>
+    <a href="resource.php?id=<?php echo $row['id']; ?>" class="block">
+                <div class="bg-white p-4 rounded shadow">
+                    <div class="text-xs text-gray-500 mb-1">
+                        <?php echo htmlspecialchars($row['code']); ?> •
+                        <?php echo htmlspecialchars($row['session']); ?> •
+                        <?php echo htmlspecialchars($row['type']); ?> •
+                        <?php echo ucfirst($row['visibility']); ?>
+                    </div>
+                    <h3 class="font-semibold text-lg">
+                        <?php echo htmlspecialchars($row['title']); ?>
+                    </h3>
+                    <p class="text-sm text-gray-600 mt-1">
+                        <?php echo htmlspecialchars(substr($row['detail'], 0, 60)); ?>...
+                    </p>
+                    <div class="mt-2 text-xs text-gray-500">❤ <?php echo $row['likes']; ?></div>
+                </div>
+            </a>
+      <?php endwhile; ?>
+        </div>
+
     </div>
 
     <!-- Footer -->
