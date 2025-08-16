@@ -7,14 +7,17 @@ if ($conn->connect_error) {
 
 // Fetch resources
 $sql = "
-  SELECT r.id, r.code, r.session, r.type, r.title, r.detail, r.likes, u.Name AS author
+  SELECT r.*, u.Name AS author,
+         (SELECT 1 FROM resource_likes WHERE user_id = ? AND resource_id = r.id LIMIT 1) AS liked
   FROM resources r
   JOIN user u ON r.created_by = u.UserID
   WHERE r.visibility = 'public'
   ORDER BY r.id DESC
 ";
-
-$result = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $userID);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -56,8 +59,9 @@ $result = $conn->query($sql);
   <div class="max-w-7xl mx-auto px-4 pb-8">
     <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
       <?php while ($row = $result->fetch_assoc()): ?>
-        <a href="resource.php?id=<?php echo $row['id']; ?>" class="block">
+        
           <div class="bg-white border rounded-lg shadow hover:shadow-md transition p-4 flex flex-col cursor-pointer">
+            <a href="resource.php?id=<?php echo $row['id']; ?>">
             <div class="text-xs text-gray-500 mb-1">
               <?php echo htmlspecialchars($row['code']); ?> •
               <?php echo htmlspecialchars($row['session']); ?> •
@@ -69,14 +73,19 @@ $result = $conn->query($sql);
             <p class="text-sm text-gray-600 mt-1 flex-grow">
               <?php echo htmlspecialchars(substr($row['detail'], 0, 60)); ?>...
             </p>
-            <div class="mt-3 flex justify-between text-xs text-gray-500">
-              <span>By <?php echo htmlspecialchars($row['author']); ?></span>
-              <span>❤ <?php echo $row['likes']; ?></span>
-            </div>
-          </div>
         </a>
-      <?php endwhile; ?>
+        <div class="mt-3 flex justify-between text-xs text-gray-500">
+          <span>By <?php echo htmlspecialchars($row['author']); ?></span>
+          <button class="like-btn <?= $row['liked'] ? 'text-red-500' : 'text-gray-500' ?>"
+        data-id="<?= $row['id'] ?>"
+        aria-pressed="<?= $row['liked'] ? 'true' : 'false' ?>">
+    ❤ <span class="like-count"><?= $row['likes'] ?></span>
+</button>
+
+        </div>
     </div>
+  <?php endwhile; ?>
+  </div>
   </div>
 
   <!-- Pagination -->
@@ -92,3 +101,34 @@ $result = $conn->query($sql);
 </body>
 
 </html>
+
+<script>
+document.addEventListener('click', async function (e) {
+    const btn = e.target.closest('.like-btn');
+    if (!btn) return;
+
+    const resourceId = btn.dataset.id;
+
+    try {
+        const res = await fetch('toggle_like.php', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `resource_id=${resourceId}`
+        });
+
+        const data = await res.json();
+        if (data && typeof data.liked !== 'undefined') {
+            btn.classList.toggle('text-red-500', data.liked);
+            btn.classList.toggle('text-gray-500', !data.liked);
+            btn.setAttribute('aria-pressed', data.liked);
+            btn.querySelector('.like-count').textContent = data.count;
+        }
+    } catch (err) {
+        alert("Failed to update like.");
+        console.error(err);
+    }
+});
+</script>
