@@ -55,6 +55,7 @@ $conn->close();
     <title>Knowledge Hub</title>
     <link rel="stylesheet" href="css/profile.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
 </head>
 
 <body style="background: linear-gradient(to right, #c6defe, #ffffff);" class=" text-gray-900">
@@ -65,7 +66,7 @@ $conn->close();
     <!-- Back Button -->
     <button class=" ml-8 mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-black/10">
         <a href="Main.php">
-            <span>←</span> Back
+            <span><i class="fa-solid fa-angle-left"></i></span> Back
         </a>
     </button>
 
@@ -75,7 +76,12 @@ $conn->close();
         <!-- Resource Details -->
         <div class="max-w-3xl mx-auto px-4 py-8 mb-6 bg-white shadow rounded-lg">
             <h1 class="text-2xl font-bold mb-4"><?php echo htmlspecialchars($title); ?></h1>
-            <p class="text-gray-700 text-lg mb-4"><?php echo htmlspecialchars($detail); ?></p>
+            <div class="text-gray-700 text-lg mb-4">
+                <p id="detail" class="line-clamp-2">
+                    <?php echo htmlspecialchars($detail); ?>
+                </p>
+                <button id="toggleBtn" class="text-blue-500 hover:underline">Show more</button>
+            </div>
 
             <?php if (!empty($pdf_file)): ?>
                 <div class="mt-4">
@@ -89,32 +95,40 @@ $conn->close();
             <?php endif; ?>
             <!-- AI Summary / Study Plan -->
             <?php if (!empty($pdf_file)): ?>
-    <!-- AI Summary / Study Plan -->
-    <div class="max-w-3xl mx-auto px-4 py-6 bg-white shadow rounded-lg mt-4">
-        <h2 class="text-xl font-semibold mb-3">AI Study Notes</h2>
+                <!-- AI Summary / Study Plan -->
+                <div class="max-w-3xl mx-auto px-4 py-6 bg-gray-200 shadow rounded-lg mt-4">
 
-        <label class="block text-sm font-medium text-slate-700">Your Gemini API Key</label>
-        <input id="geminiKey" type="password"
-            placeholder="Paste your Gemini API key"
-            class="mt-1 w-full rounded border px-3 py-2 text-sm mb-3" />
 
-        <div class="flex gap-2">
-            <button id="btnSummarize"
-                class="inline-flex items-center rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
-                Generate Study Notes
-            </button>
-            <button id="btnDownload" disabled
-                class="inline-flex items-center rounded bg-slate-600 px-4 py-2 text-sm font-semibold text-white/90 hover:bg-slate-700">
-                Download Notes (.txt)
-            </button>
-        </div>
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-semibold">AI Study Notes</h2>
+                        <!-- Toggle Button -->
+                        <button id="toggleBtn2" class="text-gray-600 hover:text-gray-900">
+                            <i id="toggleIcon2" class="fas fa-angle-down"></i>
+                        </button>
+                    </div>
+                    <div id="toggleContent" class="mt-3">
+                        <label class="block text-md font-medium text-slate-700">Your Gemini API Key</label>
+                        <input id="geminiKey" type="password"
+                            placeholder="Paste your Gemini API key"
+                            class="mt-1 w-full rounded border px-3 py-2 text-sm mb-3" />
 
-        <textarea id="aiOutput" rows="14"
-            placeholder="Your AI summary and study plan will appear here…"
-            class="mt-3 w-full rounded border px-3 py-2 text-sm"></textarea>
-    </div>
-<?php endif; ?>
+                        <div class="flex gap-2">
+                            <button id="btnSummarize"
+                                class="inline-flex items-center rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+                                Generate Study Notes
+                            </button>
+                            <button id="btnDownload" disabled
+                                class="inline-flex items-center rounded bg-slate-600 px-4 py-2 text-sm font-semibold text-white/90 hover:bg-slate-700">
+                                Download Notes (.txt)
+                            </button>
+                        </div>
 
+                        <textarea id="aiOutput" rows="14"
+                            placeholder="Your AI summary and study plan will appear here…"
+                            class="mt-3 w-full rounded border px-3 py-2 text-sm resize-none"></textarea>
+                    </div>
+                <?php endif; ?>
+                </div>
 
         </div>
 
@@ -156,6 +170,7 @@ $conn->close();
 </body>
 
 </html>
+<script src="js/resource.js"></script>
 <script>
     (function() {
         const id = <?= (int)$id ?>; // current resource id from PHP

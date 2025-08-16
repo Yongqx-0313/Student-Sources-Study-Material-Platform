@@ -138,7 +138,7 @@ function pageUrl($p)
         <!-- Keyword -->
         <input name="q" value="<?php echo htmlspecialchars($q); ?>"
           type="text" placeholder="Search title or description..."
-          class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3" />
+          class="w-[280px] flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3" />
 
         <!-- Subject code -->
         <input name="code" value="<?php echo htmlspecialchars($code); ?>"
@@ -194,7 +194,7 @@ function pageUrl($p)
               </button>
             </div>
           </div>
-          <a href="resource.php?id=<?php echo $row['id']; ?>">
+          <a class="hover:text-blue-500" href="resource.php?id=<?php echo $row['id']; ?>">
             <h2 class="font-semibold text-lg line-clamp-2">
               <?php echo htmlspecialchars($row['title']); ?>
             </h2>

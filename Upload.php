@@ -114,6 +114,7 @@ $conn->close();
     <title>Knowledge Hub</title>
     <link rel="stylesheet" href="css/profile.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
 </head>
 
 
@@ -210,7 +211,7 @@ Text excerpt (may be truncated):
     <button
         class=" ml-8 mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-black/10">
         <a href="Main.php" class="">
-            <span>←</span> Back
+            <span><i class="fa-solid fa-angle-left"></i></span> Back
         </a></button>
 
     <main class="mx-auto max-w-6xl px-4 py-6">
@@ -328,7 +329,7 @@ Text excerpt (may be truncated):
                     <textarea
                         id="description" name="description" required
                         placeholder="Briefly describe what this file contains (chapters, topics, solutions included, etc.)"
-                        class="min-h-[140px] w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"></textarea>
+                        class="resize-none min-h-[140px] w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"></textarea>
 
                     <!-- Actions -->
                     <div class="mt-4 flex items-center justify-end gap-3">

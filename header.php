@@ -4,10 +4,10 @@
     <!-- <img src="img/UCompare1.png" alt="icon" class="logo"> -->
     <div class="flex items-center">
       <nav>
-        <a href="about.php" class="mx-2 hover:text-blue-500">About</a>
         <!-- <a href="#features" class="mx-2 hover:text-blue-500">Features</a>
         <a href="#how-it-works" class="mx-2 hover:text-blue-500">How It Works</a> -->
         <a href="Main.php" class="mx-2 hover:text-blue-500">Home</a>
+        <a href="about.php" class="mx-2 hover:text-blue-500">About</a>
         <!-- <a href="#features" class="mx-2 hover:text-blue-500">Features</a>
         <a href="#how-it-works" class="mx-2 hover:text-blue-500">How It Works</a> -->
       </nav>
@@ -16,7 +16,7 @@
           <img src="img/studentprofile.png" alt="profile-picture" class="rounded-full border-2 border-white-300 shadow-lg w-full h-full object-cover profile-picture">
           <!-- <i class="fa-solid fa-user text-2xl" ></i> -->
         </a>
-        <a href="collection.php" class="mr-6">
+        <a href="collection.php" class="mr-6 hover:text-gray-700 active:text-gray-500">
           <i class="fa-solid fa-star text-3xl"></i>
         </a>
         
