@@ -131,7 +131,7 @@ $conn->close();
                                             <?php $fileName = basename($resource['pdf_file']); ?>
                                             <p class="mt-2 text-xs text-slate-500">
                                                 Current file:
-                                                <a href="<?php echo htmlspecialchars($resource['pdf_file']); ?>" target="_blank" class="text-blue-600 underline">
+                                                <a href="<?php echo htmlspecialchars($resource['pdf_file']); ?>" target="_blank" class="text-blue-600 underline truncate line-clamp-1">
                                                     <?php echo htmlspecialchars($fileName); ?>
                                                 </a>
                                             </p>

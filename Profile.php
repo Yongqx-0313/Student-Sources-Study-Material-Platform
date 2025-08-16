@@ -110,7 +110,7 @@ $userResources = $stmt2->get_result();
                         <p class="text-sm text-gray-600 mt-1">
                             <?php echo htmlspecialchars(substr($row['detail'], 0, 60)); ?>...
                         </p>
-                        <div class="mt-2 text-xs text-gray-500">❤ <?php echo $row['likes']; ?></div>
+                        <!-- <div class="mt-2 text-xs text-gray-500">❤ <?php echo $row['likes']; ?></div> -->
                     </a>
             
                     <!-- Action Buttons -->
