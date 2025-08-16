@@ -87,7 +87,7 @@ $userResources = $stmt2->get_result();
                     </a>
             
                     <!-- Action Buttons -->
-                    <div class="flex justify-end space-x-2 mt-3">
+                    <!-- <div class="flex justify-end space-x-2 mt-3">
                         <a href="edit_resource.php?id=<?php echo $row['id']; ?>"
                             class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm">
                             Edit
@@ -97,7 +97,7 @@ $userResources = $stmt2->get_result();
                             class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm">
                             Delete
                         </a>
-                    </div>
+                    </div> -->
                 </div>
             <?php endwhile; ?>
 
