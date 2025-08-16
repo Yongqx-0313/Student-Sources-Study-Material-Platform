@@ -1,10 +1,36 @@
 <?php
-// Database connection
+// DB
 $conn = new mysqli("localhost", "root", "", "sssmp");
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
+if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
+$conn->set_charset('utf8mb4');
+
+// Read filters from the URL
+$q     = trim($_GET['q']    ?? '');   // keyword
+$code  = trim($_GET['code'] ?? '');   // subject code
+$type  = trim($_GET['type'] ?? '');   // Notes | Past Paper | Tutorial | Cheat Sheet
+
+// Base SELECT + JOIN to get uploader name
+$sqlBase = "SELECT
+              r.`id`, r.`code`, r.`session`, r.`type`,
+              r.`title`, r.`detail`, r.`likes`,
+              COALESCE(u.`Name`, 'Anonymous') AS author
+            FROM `resources` AS r
+            LEFT JOIN `user` AS u ON u.`UserID` = r.`created_by`";
+
+// Always show only public on main page
+$conds   = ["r.`visibility` = 'public'"];
+$params  = [];
+$typestr = "";
+
+// Keyword search in title/detail/code
+if ($q !== "") {
+  $conds[] = "(r.`title` LIKE ? OR r.`detail` LIKE ? OR r.`code` LIKE ?)";
+  $like = "%{$q}%";
+  $params[] = $like; $params[] = $like; $params[] = $like;
+  $typestr .= "sss";
 }
 
+<<<<<<< HEAD
 // Fetch resources
 $sql = "
   SELECT r.*, u.Name AS author,
@@ -16,9 +42,31 @@ $sql = "
 ";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $userID);
+=======
+// Subject code (contains match; switch to '=' if you want exact)
+if ($code !== "") {
+  $conds[] = "r.`code` LIKE ?";
+  $params[] = "%{$code}%";
+  $typestr .= "s";
+}
+
+// Type (exact select)
+if ($type !== "") {
+  $conds[] = "r.`type` = ?";
+  $params[] = $type;
+  $typestr .= "s";
+}
+
+$sql = $sqlBase . " WHERE " . implode(" AND ", $conds) . " ORDER BY r.`id` DESC LIMIT 60";
+
+// Prepare + execute
+$stmt = $conn->prepare($sql) or die("SQL prepare error: " . $conn->error);
+if ($params) { $stmt->bind_param($typestr, ...$params); }
+>>>>>>> 34505f035c675750f26cf41b7493518012106e4f
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -38,20 +86,30 @@ $result = $stmt->get_result();
   <?php include 'header.php' ?>
   <!-- Search & Filters -->
   <div class="max-w-7xl mx-auto px-4 py-6">
-    <form class="bg-white rounded-lg shadow p-4 flex flex-wrap gap-3">
-      <input type="text" placeholder="Search title or description..."
-        class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200" />
-      <input type="text" placeholder="Subject Code"
-        class="w-32 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200" />
-      <select class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200">
+    <form method="get" action="Main.php" class="bg-white rounded-lg shadow p-4 flex flex-wrap gap-3">
+
+      <!-- Keyword -->
+      <input name="q" value="<?php echo htmlspecialchars($q); ?>"
+            type="text" placeholder="Search title or description..."
+            class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200" />
+
+      <!-- Subject code -->
+      <input name="code" value="<?php echo htmlspecialchars($code); ?>"
+            type="text" placeholder="Subject Code"
+            class="w-40 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200" />
+
+      <!-- Type -->
+      <select name="type" class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200">
         <option value="">Type</option>
-        <option value="notes">Notes</option>
-        <option value="past_paper">Past Paper</option>
-        <option value="tutorial">Tutorial</option>
-        <option value="cheatsheet">Cheat Sheet</option>
+        <option value="Notes"       <?php if($type==='Notes')       echo 'selected'; ?>>Notes</option>
+        <option value="Past Paper"  <?php if($type==='Past Paper')  echo 'selected'; ?>>Past Paper</option>
+        <option value="Tutorial"    <?php if($type==='Tutorial')    echo 'selected'; ?>>Tutorial</option>
+        <option value="Cheat Sheet" <?php if($type==='Cheat Sheet') echo 'selected'; ?>>Cheat Sheet</option>
       </select>
-      <button class="bg-indigo-600 text-white px-4 py-2 rounded">Filter</button>
-      <button class="bg-indigo-600 text-white px-4 py-2 rounded"><a href="Upload.php">Upload</a></button>
+
+      <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded">Filter</button>
+      <a href="Main.php" class="px-4 py-2 rounded border">Clear</a>
+      <a href="Upload.php" class="bg-indigo-600 text-white px-4 py-2 rounded">Upload</a>
     </form>
   </div>
 
