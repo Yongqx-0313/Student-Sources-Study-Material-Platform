@@ -35,7 +35,7 @@ $sql2 = "
     JOIN resources r ON c.resource_id = r.id
     JOIN user u ON r.created_by = u.UserID
     WHERE c.user_id = ?
-    ORDER BY c.created_at DESC
+    ORDER BY r.id DESC
 ";
 
 $stmt2 = $conn->prepare($sql2);

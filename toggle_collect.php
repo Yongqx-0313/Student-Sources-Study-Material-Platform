@@ -1,42 +1,38 @@
 <?php
 session_start();
+header('Content-Type: application/json');
+
 if (!isset($_SESSION['user'])) {
-    http_response_code(401); // Unauthorized
-    exit("Not logged in");
+    echo json_encode(['success' => false, 'message' => 'Not logged in']);
+    exit;
 }
 
 $conn = new mysqli("localhost", "root", "", "sssmp");
 if ($conn->connect_error) {
-    http_response_code(500);
-    exit("DB connection failed");
+    echo json_encode(['success' => false, 'message' => 'DB error']);
+    exit;
 }
 
-$userID = $_SESSION['user']['UserID'] ?? null;
-
+$userID = $_SESSION['user']['UserID'];
 $resourceID = (int)($_POST['resource_id'] ?? 0);
+$action = $_POST['action'] ?? '';
 
-if ($resourceID === 0) {
-    http_response_code(400);
-    exit("Invalid resource ID");
+if (!$resourceID || !in_array($action, ['collect', 'uncollect'])) {
+    echo json_encode(['success' => false, 'message' => 'Invalid data']);
+    exit;
 }
 
-// Check if already collected
-$sql = "SELECT * FROM collected WHERE user_id = ? AND resource_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("ii", $userID, $resourceID);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows > 0) {
-    // Already collected → remove it
-    $conn->query("DELETE FROM collected WHERE user_id = $userID AND resource_id = $resourceID");
-    echo json_encode(["status" => "uncollected"]);
-} else {
-    // Not collected → insert
-    $sql = "INSERT INTO collected (user_id, resource_id, created_at) VALUES (?, ?, NOW())";
-    $stmt = $conn->prepare($sql);
+if ($action === 'collect') {
+    $stmt = $conn->prepare("INSERT IGNORE INTO collected (user_id, resource_id) VALUES (?, ?)");
     $stmt->bind_param("ii", $userID, $resourceID);
     $stmt->execute();
-    echo json_encode(["status" => "collected"]);
+    $collected = true;
+} else {
+    $stmt = $conn->prepare("DELETE FROM collected WHERE user_id = ? AND resource_id = ?");
+    $stmt->bind_param("ii", $userID, $resourceID);
+    $stmt->execute();
+    $collected = false;
 }
+
+echo json_encode(['success' => true, 'collected' => $collected]);
 ?>

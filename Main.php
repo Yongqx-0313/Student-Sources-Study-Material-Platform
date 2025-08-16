@@ -117,34 +117,8 @@ function pageUrl($p)
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
 </head>
-<script>
-document.querySelectorAll('.star-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const resourceId = btn.dataset.id;
-    fetch('toggle_collect.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `resource_id=${resourceId}`
-    })
-    .then(res => res.json())
-    .then(data => {
-      const icon = btn.querySelector('i');
-      if (data.status === 'collected') {
-        icon.classList.remove('fa-regular', 'text-gray-400');
-        icon.classList.add('fa-solid', 'text-yellow-400');
-      } else {
-        icon.classList.remove('fa-solid', 'text-yellow-400');
-        icon.classList.add('fa-regular', 'text-gray-400');
-      }
-    });
-  });
-});
-</script>
-
 
 <body style="background: linear-gradient(to right, #c6defe, #ffffff);" class=" text-gray-900">
-
-
   <!-- Header -->
   <?php include 'header.php' ?>
   <!-- Search & Filters -->
@@ -189,9 +163,13 @@ document.querySelectorAll('.star-btn').forEach(btn => {
               <?php echo htmlspecialchars($row['session']); ?> •
               <?php echo htmlspecialchars($row['type']); ?>
             </div>
-            <div> <button class="star-btn" data-id="<?= $row['id'] ?>">
-                <i class="<?= $row['collected'] ? 'fa-solid text-yellow-400' : 'fa-regular text-gray-400' ?> fa-star"></i>
+            <div>
+              <button class="collect-btn <?= $row['collected'] ? 'text-yellow-400' : 'text-gray-400' ?>"
+                data-id="<?= $row['id'] ?>"
+                aria-pressed="<?= $row['collected'] ? 'true' : 'false' ?>">
+                <i class="fa-star <?= $row['collected'] ? 'fa-solid' : 'fa-regular' ?>"></i>
               </button>
+
             </div>
           </div>
           <a href="resource.php?id=<?php echo $row['id']; ?>">
@@ -285,4 +263,37 @@ document.querySelectorAll('.star-btn').forEach(btn => {
       console.error(err);
     }
   });
+</script>
+<script>
+document.querySelectorAll('.collect-btn').forEach(button => {
+  button.addEventListener('click', function () {
+    const resourceId = this.dataset.id;
+    const isCollected = this.getAttribute('aria-pressed') === 'true';
+
+    fetch('toggle_collect.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `resource_id=${resourceId}&action=${isCollected ? 'uncollect' : 'collect'}`
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        const icon = this.querySelector('i');
+        this.setAttribute('aria-pressed', data.collected ? 'true' : 'false');
+
+        // Toggle color
+        this.classList.toggle('text-yellow-400', data.collected);
+        this.classList.toggle('text-gray-400', !data.collected);
+
+        // Toggle icon style
+        icon.classList.toggle('fa-solid', data.collected);
+        icon.classList.toggle('fa-regular', !data.collected);
+      } else {
+        alert("Action failed: " + data.message);
+      }
+    }).catch(err => {
+      console.error("AJAX error:", err);
+    });
+  });
+});
 </script>
