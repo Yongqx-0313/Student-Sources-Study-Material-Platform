@@ -122,10 +122,23 @@ $conn->close();
                 <div>
                     <label class="mb-2 block text-sm font-medium text-slate-700">Replace file (optional)</label>
                     <input type="file" name="file"
-                        class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm file:mr-4 file:rounded-md file:border-0 file:bg-slate-800 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-700"
+                        class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm 
+                            file:mr-4 file:rounded-md file:border-0 file:bg-slate-800 file:px-3 file:py-2 
+                            file:text-sm file:font-semibold file:text-white hover:file:bg-slate-700"
                         accept=".pdf,.doc,.docx" />
-                    <p class="mt-2 text-xs text-slate-500">Current file: <a href="<?php echo $resource['pdf_file']; ?>"
-                            target="_blank" class="text-blue-600 underline">View</a></p>
+
+                    <?php if (!empty($resource['pdf_file'])): ?>
+                                            <?php $fileName = basename($resource['pdf_file']); ?>
+                                            <p class="mt-2 text-xs text-slate-500">
+                                                Current file:
+                                                <a href="<?php echo htmlspecialchars($resource['pdf_file']); ?>" target="_blank" class="text-blue-600 underline">
+                                                    <?php echo htmlspecialchars($fileName); ?>
+                                                </a>
+                                            </p>
+                                        <?php else: ?>
+                                            <p class="mt-2 text-xs text-slate-400">No file uploaded.</p>
+                                        <?php endif; ?>
+
 
                     <label class="mt-4 block text-sm font-medium text-slate-700">Visibility</label>
                     <div class="mt-2 flex gap-2">
