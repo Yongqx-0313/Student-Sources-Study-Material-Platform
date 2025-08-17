@@ -128,9 +128,10 @@ function pageUrl($p)
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
 </head>
 
-<body style="background: linear-gradient(to right, #c6defe, #ffffff);" class=" text-gray-900">
+<body style="background: linear-gradient(to right, #c6defe, #ffffff);" class="min-h-screen flex flex-col text-gray-900">
   <!-- Header -->
   <?php include 'header.php' ?>
+  <main class="flex-1 flex flex-col">
   <!-- Search & Filters -->
   <div class="max-w-7xl mx-auto px-4 py-6">
     <form method="get" action="Main.php" class="bg-white rounded-lg shadow p-4 flex flex-wrap gap-3 justify-between">
@@ -217,7 +218,7 @@ function pageUrl($p)
   </div>
 
   <!-- Pagination -->
-  <div class="max-w-7xl mx-auto px-4 pb-8">
+  <div class="max-w-7xl mx-auto px-4 pb-8 mt-auto">
     <div class="flex justify-center gap-2">
       <!-- Prev: always goes back, minimum page 1 -->
       <a href="<?php echo pageUrl(max(1, $page - 1)); ?>"
@@ -250,6 +251,7 @@ function pageUrl($p)
     </p>
   </div>
 
+  + </main>
   <!-- Footer -->
   <?php include 'footer.php' ?>
 </body>
