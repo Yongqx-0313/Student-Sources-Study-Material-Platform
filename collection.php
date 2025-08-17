@@ -13,7 +13,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$userID = $_SESSION['user']['UserID']; // Logged-in user ID
+$userID = $_SESSION['user']['UserID'] ?? 0; // Logged-in user ID
 $userData = [];
 
 // --- Get user info ---
@@ -58,47 +58,39 @@ $userResources = $stmt2->get_result();
 </head>
 
 
-<body
-    style="background: linear-gradient(to right, #c6defe, #ffffff);"
-    class="min-h-screen flex flex-col">
+<body style="background: linear-gradient(to right, #c6defe, #ffffff);" class="min-h-screen">
     <!-- Header -->
     <?php include 'header.php' ?>
 
     <!-- Main Section -->
-    <div class="flex flex-col flex-1 justify-center items-center py-10 profile">
+    <div class="flex flex-col justify-center items-center py-10 profile">
 
         <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-6 justify-center items-center py-10">
             <?php while ($row = $userResources->fetch_assoc()): ?>
-                <div class="bg-white p-4 rounded shadow relative">
-                    <a href="resource.php?id=<?php echo $row['id']; ?>" class="block">
-                        <div class="text-xs text-gray-500 mb-1">
-                            <?php echo htmlspecialchars($row['code']); ?> •
-                            <?php echo htmlspecialchars($row['session']); ?> •
-                            <?php echo htmlspecialchars($row['type']); ?> •
-                            <?php echo ucfirst($row['visibility']); ?>
+                <div class="bg-white p-4 rounded shadow relative card">
+                    <a href="resource.php?id=<?= $row['id']; ?>" class="block h-full">
+                        <div class="text-xs text-gray-500 mb-1 pr-6"> <!-- add padding-right to avoid overlap -->
+                            <?= htmlspecialchars($row['code']); ?> •
+                            <?= htmlspecialchars($row['session']); ?> •
+                            <?= htmlspecialchars($row['type']); ?> •
+                            <?= ucfirst($row['visibility']); ?>
                         </div>
+
                         <h3 class="font-semibold text-lg">
-                            <?php echo htmlspecialchars($row['title']); ?>
+                            <?= htmlspecialchars($row['title']); ?>
                         </h3>
                         <p class="text-sm text-gray-600 mt-1">
-                            <?php echo htmlspecialchars(substr($row['detail'], 0, 60)); ?>...
+                            <?= htmlspecialchars(substr($row['detail'], 0, 60)); ?>...
                         </p>
-                        <!-- <div class="mt-2 text-xs text-gray-500">❤ <?php echo $row['likes']; ?></div> -->
                     </a>
-            
-                    <!-- Action Buttons -->
-                    <!-- <div class="flex justify-end space-x-2 mt-3">
-                        <a href="edit_resource.php?id=<?php echo $row['id']; ?>"
-                            class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm">
-                            Edit
-                        </a>
-                        <a href="delete_resource.php?id=<?php echo $row['id']; ?>"
-                            onclick="return confirm('Are you sure you want to delete this resource?');"
-                            class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 text-sm">
-                            Delete
-                        </a>
-                    </div> -->
+
+                    <!-- Star button -->
+                    <button class="collect-btn absolute top-3 right-3 text-yellow-400 hover:scale-110 transition"
+                        data-id="<?= $row['id']; ?>" aria-pressed="true">
+                        <i class="fa-solid fa-star text-sm"></i> <!-- fixed size -->
+                    </button>
                 </div>
+
             <?php endwhile; ?>
 
         </div>
@@ -107,6 +99,45 @@ $userResources = $stmt2->get_result();
 
     <!-- Footer -->
     <?php include 'footer.php' ?>
+
+    <script>
+        document.querySelectorAll('.collect-btn').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const resourceId = this.dataset.id;
+                const isCollected = this.getAttribute('aria-pressed') === 'true';
+
+                fetch('toggle_collect.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `resource_id=${encodeURIComponent(resourceId)}&action=${isCollected ? 'uncollect' : 'collect'}`
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            const icon = this.querySelector('i');
+                            this.setAttribute('aria-pressed', data.collected ? 'true' : 'false');
+
+                            this.classList.toggle('text-yellow-400', data.collected);
+                            this.classList.toggle('text-gray-400', !data.collected);
+                            icon.classList.toggle('fa-solid', data.collected);
+                            icon.classList.toggle('fa-regular', !data.collected);
+
+                            if (!data.collected) {
+                                this.closest('.card').remove(); // remove card if uncollected
+                            }
+                        } else {
+                            alert("Action failed: " + data.message);
+                        }
+                    })
+                    .catch(err => console.error("AJAX error:", err));
+            });
+        });
+
+    </script>
+
 </body>
 
 

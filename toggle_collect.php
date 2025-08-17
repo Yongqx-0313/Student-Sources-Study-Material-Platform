@@ -13,8 +13,8 @@ if ($conn->connect_error) {
     exit;
 }
 
-$userID = $_SESSION['user']['UserID'];
-$resourceID = (int)($_POST['resource_id'] ?? 0);
+$userID = $_SESSION['user']['UserID'] ?? 0;
+$resourceID = (int) ($_POST['resource_id'] ?? 0);
 $action = $_POST['action'] ?? '';
 
 if (!$resourceID || !in_array($action, ['collect', 'uncollect'])) {
@@ -26,13 +26,18 @@ if ($action === 'collect') {
     $stmt = $conn->prepare("INSERT IGNORE INTO collected (user_id, resource_id) VALUES (?, ?)");
     $stmt->bind_param("ii", $userID, $resourceID);
     $stmt->execute();
+    $collected = $stmt->affected_rows >= 0;
+    $stmt->close();
     $collected = true;
-} else {
+} else { // uncollect
     $stmt = $conn->prepare("DELETE FROM collected WHERE user_id = ? AND resource_id = ?");
     $stmt->bind_param("ii", $userID, $resourceID);
     $stmt->execute();
+    $stmt->close();
     $collected = false;
 }
+
+$conn->close();
 
 echo json_encode(['success' => true, 'collected' => $collected]);
 ?>
