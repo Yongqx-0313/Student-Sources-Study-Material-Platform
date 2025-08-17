@@ -108,14 +108,14 @@ $conn->close();
     <link rel="stylesheet" href="css/profile.css">
 </head>
 
-<body style="background: linear-gradient(to right, #c6defe, #ffffff);" class=" text-gray-900">
+<body style="background: linear-gradient(to right, #c6defe, #ffffff);" class="min-h-screen flex flex-col text-gray-900">
 
     <?php include 'header.php'; ?>
 
-    <main class="mx-auto max-w-6xl px-4 py-6">
+    <main class="flex-1 flex flex-col align-center justify-center mx-auto max-w-6xl px-4 py-6">
         <h1 class="mb-4 text-2xl font-semibold">Edit Study Material</h1>
 
-        <form action="" method="POST" enctype="multipart/form-data" class="rounded-2xl bg-white p-6 shadow-xl">
+        <form action="" method="POST" enctype="multipart/form-data" class="rounded-2xl bg-white p-6 shadow-xl w-auto lg:min-w-[994px]">
             <div class="grid gap-6 md:grid-cols-[290px,1fr]">
 
                 <!-- LEFT: File + Visibility -->
