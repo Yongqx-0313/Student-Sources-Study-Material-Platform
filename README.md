@@ -63,7 +63,43 @@ This project integrates **Gemini API** to provide smart automation:
 
 > ⚠️ Make sure to insert your own Gemini API key for the AI features to work.
 
+
 ---
 
-## 📂 Project Structure
+## 🚀 How to Run Locally
+
+1. Download or clone the repo:
+   ```bash
+   git clone https://github.com/Yongqx-0313/Student-Sources-Study-Material-Platform.git
+2. Place it inside your htdocs folder if you're using XAMPP:
+
+   C:\xampp\htdocs\Student-Sources-Study-Material-Platform\
+
+
+3. Start Apache and MySQL via XAMPP.
+
+4. Import the SQL file into phpMyAdmin (if provided).
+
+5. Visit:
+   http://localhost/Student-Sources-Study-Material-Platform/
+
+---
+
+## 🤖 Gemini API Setup (Optional)
+
+1) Sign up and get your API key from Gemini.
+
+2) Add your key to the summary.php or config file where required.
+
+## 📸 UI Screenshots
+
+Add screenshots of Home, About, Upload pages for visual reference (not included here but recommended).
+
+## 📃 License
+
+This project is for educational purposes as part of MMU Hack Day.
+
+## 🙏 Special Thanks
+
+To all team members, mentors, and MMU Hack Day organizers!
 
