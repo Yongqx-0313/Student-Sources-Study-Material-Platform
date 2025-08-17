@@ -215,7 +215,7 @@ Text excerpt (may be truncated):
             <span><i class="fa-solid fa-angle-left"></i></span> Back
         </a></button>
 
-    <main class="flex flex-col mx-auto max-w-6xl px-4 py-6 mt-2">
+    <main class="flex flex-col mx-auto max-w-6xl px-4 py-6">
         <h1 class="mb-4 text-2xl font-semibold">Upload Study Material</h1>
 
         <form action="Upload.php" method="POST" enctype="multipart/form-data"
@@ -349,7 +349,10 @@ Text excerpt (may be truncated):
     </main>
     
     <!-- Footer -->
-    <?php include 'footer.php'?>
+    <?php 
+$page = basename(__FILE__); // this will be "upload.php"
+include 'footer.php';
+?>
 </body>
 
 </html>
