@@ -12,7 +12,7 @@ A centralized platform that empowers students to **upload**, **share**, and **ac
 
 ## 🌐 Live Demo / Repository
 🔗 GitHub: [Student-Sources-Study-Material-Platform](https://github.com/Yongqx-0313/Student-Sources-Study-Material-Platform)
-
+🔗 Presentation slide: [Student-Sources-Study-Material-Platform](https://www.canva.com/design/DAGwPYnSXOg/anzHWEnyEKfQ6_se-dt-pw/edit)
 ---
 
 ## 🧠 Problem Statement
