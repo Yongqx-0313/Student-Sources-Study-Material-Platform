@@ -89,6 +89,9 @@ $userResources = $stmt2->get_result();
                         data-id="<?= $row['id']; ?>" aria-pressed="true">
                         <i class="fa-solid fa-star text-sm"></i> <!-- fixed size -->
                     </button>
+                    <div class="mt-3 flex justify-between text-xs text-gray-500">
+                        <span>By <?php echo htmlspecialchars($row['author']); ?></span>
+                    </div>
                 </div>
 
             <?php endwhile; ?>
