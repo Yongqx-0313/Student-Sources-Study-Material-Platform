@@ -93,9 +93,7 @@ This project integrates **Gemini API** to provide smart automation:
 
 2) Add your key to the summary.php or config file where required.
 
-## 📸 UI Screenshots
 
-Add screenshots of Home, About, Upload pages for visual reference (not included here but recommended).
 
 ## 📃 License
 
