@@ -203,11 +203,12 @@ Text excerpt (may be truncated):
 
 
 
-<body style="background: linear-gradient(to right, #c6defe, #ffffff);" class=" text-gray-900">
+<body style="background: linear-gradient(to right, #c6defe, #ffffff);" class="min-h-screen text-gray-900">
 
 
     <!-- Header -->
     <?php include 'header.php' ?>
+    
     <button
         class=" ml-8 mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-black/10">
         <a href="Main.php" class="">
@@ -347,7 +348,7 @@ Text excerpt (may be truncated):
         </form>
     </main>
     <!-- Footer -->
-    <?php include 'footer.php' ?>
+    <?php include 'footer.php'?>
 </body>
 
 </html>

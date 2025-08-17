@@ -133,7 +133,7 @@ function pageUrl($p)
   <?php include 'header.php' ?>
   <main class="flex-1 flex flex-col">
   <!-- Search & Filters -->
-  <div class="max-w-7xl mx-auto px-4 py-6">
+  <div class="mx-auto px-4 py-6 w-auto lg:w-[1275px]">
     <form method="get" action="Main.php" class="bg-white rounded-lg shadow p-4 flex flex-wrap gap-3 justify-between">
       <div>
         <!-- Keyword -->

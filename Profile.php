@@ -58,12 +58,12 @@ $userResources = $stmt2->get_result();
 
 <body
     style="background: linear-gradient(to right, #c6defe, #ffffff);"
-    class="min-h-screen">
+    class="min-h-screen flex flex-col">
     <!-- Header -->
     <?php include 'header.php' ?>
 
     <!-- Main Section -->
-    <div class="flex flex-col justify-center items-center py-10 profile">
+    <div class="flex flex-col flex-1 justify-center items-center py-10 profile">
         <main class="bg-white shadow-md rounded-lg p-6 max-w-3xl w-full">
             <!-- Profile Container -->
             <div class="flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8">
