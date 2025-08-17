@@ -1,6 +1,12 @@
-<header class="sticky top-0 bg-yellow-400 text-black shadow ">
+<header class="sticky top-0 bg-gradient-to-r from-blue-600 via-blue-400 to-white text-black shadow ">
   <div class="container mx-auto px-4 py-2 flex flex-col justify-between items-center md:flex-row">
-    <a href="#" class="text-xl font-bold text-indigo-600">Knowledge Hub</a>
+    <div class="flex align-center justify-center">
+      <div><img src="img/logo.png" alt="Logo" class="max-w-[35px] max-h-[35px] mr-2">
+    </div>
+<a href="#" class="text-xl font-bold text-white mt-1">
+    Knowledge Hub</a>
+    </div>
+    
     <!-- <img src="img/UCompare1.png" alt="icon" class="logo"> -->
     <div class="flex items-center">
       <nav>
