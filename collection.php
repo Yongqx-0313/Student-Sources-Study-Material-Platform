@@ -60,12 +60,12 @@ $userResources = $stmt2->get_result();
 
 <body
     style="background: linear-gradient(to right, #c6defe, #ffffff);"
-    class="min-h-screen">
+    class="min-h-screen flex flex-col">
     <!-- Header -->
     <?php include 'header.php' ?>
 
     <!-- Main Section -->
-    <div class="flex flex-col justify-center items-center py-10 profile">
+    <div class="flex flex-col flex-1 justify-center items-center py-10 profile">
 
         <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-6 justify-center items-center py-10">
             <?php while ($row = $userResources->fetch_assoc()): ?>
