@@ -179,10 +179,10 @@ $conn->close();
         const aiOutput = document.getElementById('aiOutput');
         const keyInput = document.getElementById('geminiKey');
 
-        // Optional: remember key in localStorage
-        keyInput.value = localStorage.getItem('gemini_api_key') || '';
+        // Optional: remember key in sessionStorage
+        keyInput.value = sessionStorage.getItem('gemini_api_key') || '';
         keyInput.addEventListener('change', () => {
-            localStorage.setItem('gemini_api_key', keyInput.value.trim());
+            sessionStorage.setItem('gemini_api_key', keyInput.value.trim());
         });
 
         btnSummarize.addEventListener('click', async () => {

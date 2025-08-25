@@ -130,9 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!fileInput || !aiFillBtn || !geminiKeyEl || !titleEl || !detailEl) return;
 
   // remember key
-  geminiKeyEl.value = localStorage.getItem('gemini_api_key') || '';
+  geminiKeyEl.value = sessionStorage.getItem('gemini_api_key') || '';
   geminiKeyEl.addEventListener('change', () => {
-    localStorage.setItem('gemini_api_key', geminiKeyEl.value.trim());
+    sessionStorage.setItem('gemini_api_key', geminiKeyEl.value.trim());
   });
 
   aiFillBtn.disabled = true;
