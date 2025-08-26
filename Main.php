@@ -133,51 +133,60 @@ function pageUrl($p)
   <?php include 'header.php' ?>
   <main class="flex-1 flex flex-col">
     <!-- Search & Filters -->
-    <div class="mx-auto px-4 py-6 w-auto lg:w-[1275px]">
-      <form method="get" action="Main.php" class="bg-white rounded-lg shadow p-4 flex flex-wrap gap-3 justify-between">
-        <div>
+    <div class="lg:mx-auto px-4 py-6 w-auto xl:w-[1275px]">
+      <form method="get" action="Main.php" class="bg-white rounded-lg shadow p-4 flex flex-col md:flex-row flex-wrap gap-4 justify-between">
+        <div class="flex flex-col justify-between flex-wrap gap-y-4 md:flex-row items-center">
           <!-- Keyword -->
-          <input name="q" value="<?php echo htmlspecialchars($q); ?>" type="text"
-            placeholder="Search title or description..."
-            class="w-[280px] flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3" />
+          <div><input name="q" value="<?php echo htmlspecialchars($q); ?>" type="text"
+              placeholder="Search title or description..."
+              class="lg:w-[280px] flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3" />
+          </div>
 
           <!-- Subject code -->
-          <input name="code" value="<?php echo htmlspecialchars($code); ?>" type="text" placeholder="Subject Code"
-            class="w-40 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3" />
+           <div><input name="code" value="<?php echo htmlspecialchars($code); ?>" type="text" placeholder="Subject Code"
+            class="w-40 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3" /></div>
+          
 
           <!-- Type -->
-          <select name="type" class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3">
+           <div class="flex"> <select name="type" class="w-fit border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3">
             <option value="">Type</option>
             <option value="Notes" <?php if ($type === 'Notes')
-              echo 'selected'; ?>>Notes</option>
+                                    echo 'selected'; ?>>Notes</option>
             <option value="Past Paper" <?php if ($type === 'Past Paper')
-              echo 'selected'; ?>>Past Paper</option>
+                                          echo 'selected'; ?>>Past Paper</option>
             <option value="Tutorial" <?php if ($type === 'Tutorial')
-              echo 'selected'; ?>>Tutorial</option>
+                                        echo 'selected'; ?>>Tutorial</option>
             <option value="Cheat Sheet" <?php if ($type === 'Cheat Sheet')
-              echo 'selected'; ?>>Cheat Sheet</option>
+                                          echo 'selected'; ?>>Cheat Sheet</option>
           </select>
+        <select name="session"
+              class="w-fit border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3">
+              <option value="">Session</option>
+              <option value="2019/2020" <?php if ($sessionFilter === '2019/2020')
+                                          echo 'selected'; ?>>2019/2020</option>
+              <option value="2020/2021" <?php if ($sessionFilter === '2020/2021')
+                                          echo 'selected'; ?>>2020/2021</option>
+              <option value="2021/2022" <?php if ($sessionFilter === '2021/2022')
+                                          echo 'selected'; ?>>2021/2022</option>
+              <option value="2022/2023" <?php if ($sessionFilter === '2022/2023')
+                                          echo 'selected'; ?>>2022/2023</option>
+              <option value="2023/2024" <?php if ($sessionFilter === '2023/2024')
+                                          echo 'selected'; ?>>2023/2024</option>
+            </select>
+        </div>
+         
 
           <!-- Session -->
-          <select name="session"
-            class="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-200 mr-3">
-            <option value="">Session</option>
-            <option value="2019/2020" <?php if ($sessionFilter === '2019/2020')
-              echo 'selected'; ?>>2019/2020</option>
-            <option value="2020/2021" <?php if ($sessionFilter === '2020/2021')
-              echo 'selected'; ?>>2020/2021</option>
-            <option value="2021/2022" <?php if ($sessionFilter === '2021/2022')
-              echo 'selected'; ?>>2021/2022</option>
-            <option value="2022/2023" <?php if ($sessionFilter === '2022/2023')
-              echo 'selected'; ?>>2022/2023</option>
-            <option value="2023/2024" <?php if ($sessionFilter === '2023/2024')
-              echo 'selected'; ?>>2023/2024</option>
-          </select>
+          
+          
 
-          <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded mr-3">Filter</button>
+          <div>
+            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded mr-3">Filter</button>
           <a href="Main.php" class="px-4 py-2 rounded border">Clear</a>
+          </div>
+          
         </div>
-        <div class="flex">
+        <div class="flex justify-center">
           <a href="Upload.php" class="bg-indigo-600 text-white px-4 py-2 rounded">Upload</a>
         </div>
       </form>
@@ -240,7 +249,7 @@ function pageUrl($p)
           $end = min($totalPages, max($end, $start + 4));
         }
         for ($p = $start; $p <= $end; $p++):
-          ?>
+        ?>
           <a href="<?php echo pageUrl($p); ?>" aria-current="<?php echo ($p == $page) ? 'page' : 'false'; ?>"
             class="px-3 py-1 border rounded <?php echo ($p == $page) ? 'bg-indigo-600 text-white' : 'hover:bg-gray-100'; ?>">
             <?php echo $p; ?>
@@ -255,8 +264,6 @@ function pageUrl($p)
         Page <?php echo $page; ?> · <?php echo $totalRows; ?> result(s) · <?php echo $totalPages; ?> page(s)
       </p>
     </div>
-
-    +
   </main>
   <!-- Footer -->
   <?php include 'footer.php' ?>
@@ -265,7 +272,7 @@ function pageUrl($p)
 </html>
 
 <script>
-  document.addEventListener('click', async function (e) {
+  document.addEventListener('click', async function(e) {
     const btn = e.target.closest('.like-btn');
     if (!btn) return;
 
@@ -296,17 +303,17 @@ function pageUrl($p)
 </script>
 <script>
   document.querySelectorAll('.collect-btn').forEach(button => {
-    button.addEventListener('click', function () {
+    button.addEventListener('click', function() {
       const resourceId = this.dataset.id;
       const isCollected = this.getAttribute('aria-pressed') === 'true';
 
       fetch('toggle_collect.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: `resource_id=${resourceId}&action=${isCollected ? 'uncollect' : 'collect'}`
-      })
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: `resource_id=${resourceId}&action=${isCollected ? 'uncollect' : 'collect'}`
+        })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
