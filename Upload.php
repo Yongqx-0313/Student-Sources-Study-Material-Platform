@@ -119,30 +119,30 @@ $conn->close();
 
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const fileInput   = document.querySelector('input[type="file"][name="file"]');
-  const aiFillBtn   = document.getElementById('aiFillBtn');
-  const geminiKeyEl = document.getElementById('geminiKey');
-  const aiFillHint  = document.getElementById('aiFillHint');
-  const titleEl     = document.getElementById('title');
-  const detailEl    = document.getElementById('description');
+    document.addEventListener('DOMContentLoaded', () => {
+        const fileInput = document.querySelector('input[type="file"][name="file"]');
+        const aiFillBtn = document.getElementById('aiFillBtn');
+        const geminiKeyEl = document.getElementById('geminiKey');
+        const aiFillHint = document.getElementById('aiFillHint');
+        const titleEl = document.getElementById('title');
+        const detailEl = document.getElementById('description');
 
-  if (!fileInput || !aiFillBtn || !geminiKeyEl || !titleEl || !detailEl) return;
+        if (!fileInput || !aiFillBtn || !geminiKeyEl || !titleEl || !detailEl) return;
 
-  // remember key
-  geminiKeyEl.value = sessionStorage.getItem('gemini_api_key') || '';
-  geminiKeyEl.addEventListener('change', () => {
-    sessionStorage.setItem('gemini_api_key', geminiKeyEl.value.trim());
-  });
+        // remember key
+        geminiKeyEl.value = sessionStorage.getItem('gemini_api_key') || '';
+        geminiKeyEl.addEventListener('change', () => {
+            sessionStorage.setItem('gemini_api_key', geminiKeyEl.value.trim());
+        });
 
-  aiFillBtn.disabled = true;
-  fileInput.addEventListener('change', () => {
-    aiFillBtn.disabled = !fileInput.files || fileInput.files.length === 0;
-  });
+        aiFillBtn.disabled = true;
+        fileInput.addEventListener('change', () => {
+            aiFillBtn.disabled = !fileInput.files || fileInput.files.length === 0;
+        });
 
-  const callGeminiAI = async (apiKey, fileName, textSample, model='gemini-1.5-flash') => {
-    const url = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-    const prompt = `You are an assistant for a student-sourced study material hub.
+        const callGeminiAI = async (apiKey, fileName, textSample, model = 'gemini-1.5-flash') => {
+            const url = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+            const prompt = `You are an assistant for a student-sourced study material hub.
 Return strict JSON only (no code fences, no extra text): {"title": "...", "detail": "..."}
 - "title": ≤ 80 characters
 - "detail": 2–4 concise sentences
@@ -151,54 +151,74 @@ File name: ${fileName}
 Text excerpt (may be truncated):
 """${(textSample || '').slice(0, 6000)}"""`;
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }]}] })
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                })
+            });
+            if (!res.ok) {
+                throw new Error(`Gemini HTTP ${res.status} — ${await res.text()}`);
+            }
+            const data = await res.json();
+            const txt = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            const m = String(txt).match(/\{[\s\S]*\}/);
+            if (!m) throw new Error('Gemini did not return JSON.');
+            return JSON.parse(m[0]);
+        };
+
+        aiFillBtn.addEventListener('click', async () => {
+            const file = fileInput.files?.[0];
+            if (!file) return;
+            if (!geminiKeyEl.value.trim()) {
+                alert('Please paste your Gemini API key.');
+                geminiKeyEl.focus();
+                return;
+            }
+
+            aiFillBtn.disabled = true;
+            aiFillBtn.textContent = 'Analyzing…';
+            aiFillHint?.classList.remove('hidden');
+
+            try {
+                // 1) Send the selected file to server-side extractor
+                const fd = new FormData();
+                fd.append('file', file);
+                const extr = await fetch('extract_text_from_upload.php', {
+                    method: 'POST',
+                    body: fd
+                });
+                const ejson = await extr.json();
+                if (!ejson.ok) throw new Error(ejson.error || 'Failed to extract file text');
+
+                // 2) Ask Gemini for title/detail
+                const {
+                    title,
+                    detail
+                } = await callGeminiAI(geminiKeyEl.value.trim(), file.name, ejson.text);
+
+                if (!titleEl.value && title) titleEl.value = title.slice(0, 200);
+                if (!detailEl.value && detail) detailEl.value = detail;
+
+                aiFillBtn.textContent = 'Filled with AI ✅';
+            } catch (err) {
+                console.error(err);
+                alert('AI Fill failed: ' + err.message);
+                aiFillBtn.textContent = '⚡ AI Fill';
+            } finally {
+                aiFillBtn.disabled = !fileInput.files || fileInput.files.length === 0;
+                aiFillHint?.classList.add('hidden');
+                setTimeout(() => (aiFillBtn.textContent = '⚡ AI Fill'), 1100);
+            }
+        });
     });
-    if (!res.ok) { throw new Error(`Gemini HTTP ${res.status} — ${await res.text()}`); }
-    const data = await res.json();
-    const txt = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const m = String(txt).match(/\{[\s\S]*\}/);
-    if (!m) throw new Error('Gemini did not return JSON.');
-    return JSON.parse(m[0]);
-  };
-
-  aiFillBtn.addEventListener('click', async () => {
-    const file = fileInput.files?.[0];
-    if (!file) return;
-    if (!geminiKeyEl.value.trim()) { alert('Please paste your Gemini API key.'); geminiKeyEl.focus(); return; }
-
-    aiFillBtn.disabled = true;
-    aiFillBtn.textContent = 'Analyzing…';
-    aiFillHint?.classList.remove('hidden');
-
-    try {
-      // 1) Send the selected file to server-side extractor
-      const fd = new FormData();
-      fd.append('file', file);
-      const extr = await fetch('extract_text_from_upload.php', { method:'POST', body: fd });
-      const ejson = await extr.json();
-      if (!ejson.ok) throw new Error(ejson.error || 'Failed to extract file text');
-
-      // 2) Ask Gemini for title/detail
-      const { title, detail } = await callGeminiAI(geminiKeyEl.value.trim(), file.name, ejson.text);
-
-      if (!titleEl.value && title)  titleEl.value  = title.slice(0, 200);
-      if (!detailEl.value && detail) detailEl.value = detail;
-
-      aiFillBtn.textContent = 'Filled with AI ✅';
-    } catch (err) {
-      console.error(err);
-      alert('AI Fill failed: ' + err.message);
-      aiFillBtn.textContent = '⚡ AI Fill';
-    } finally {
-      aiFillBtn.disabled = !fileInput.files || fileInput.files.length === 0;
-      aiFillHint?.classList.add('hidden');
-      setTimeout(() => (aiFillBtn.textContent = '⚡ AI Fill'), 1100);
-    }
-  });
-});
 </script>
 
 
@@ -210,12 +230,12 @@ Text excerpt (may be truncated):
     <?php include 'header.php' ?>
     <div>
         <button
-        class=" ml-8 mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-black/10">
-        <a href="Main.php" class="">
-            <span><i class="fa-solid fa-angle-left"></i></span> Back
-        </a></button>
+            class=" ml-8 mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-black/10">
+            <a href="Main.php" class="">
+                <span><i class="fa-solid fa-angle-left"></i></span> Back
+            </a></button>
     </div>
-    
+
 
     <main class="flex-1 flex flex-col align-center justify-center mx-auto max-w-6xl px-4 py-4">
         <h1 class="mb-4 text-2xl font-semibold">Upload Study Material</h1>
@@ -266,12 +286,20 @@ Text excerpt (may be truncated):
                                 class="rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed">
                                 ⚡ AI Fill
                             </button>
+
                             <div id="geminiKeyWrap">
-                                <label class="block text-md font-medium text-slate-800 mt-2">Gemini API Key</label>
+                                <div class="flex justify-between items-end">
+                                    <label class="block text-md font-medium text-slate-800 mt-2">Gemini API Key</label>
+                                    <button id="openApiInfo" type="button"
+                                        class=" text-[12px] underline text-blue-600 hover:text-blue-800">
+                                        <b>Get API Key here</b>
+                                    </button>
+                                </div>
+
                                 <input id="geminiKey" type="password"
                                     placeholder="Paste your Gemini API key"
                                     class="mt-1 w-full rounded border px-3 py-2 text-sm" />
-                                <p class="text-[11px] text-slate-500 mt-1">Key is stored locally in your browser (localStorage).</p>
+                                <p class="text-[9.5px] text-slate-500 mt-1">Key is stored temporarily in your browser (sessionStorage).</p>
                             </div>
 
                             <p id="aiFillHint" class="text-xs text-slate-500 hidden">
@@ -282,6 +310,41 @@ Text excerpt (may be truncated):
                     <br />
                     <p class="text-lg"><strong>Author: </strong><?php echo ($name); ?></p>
                 </div>
+
+                <!-- Modal Background -->
+                <div id="apiInfoModal"
+                    class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+                    <!-- Modal Content -->
+                    <div class="bg-white rounded-lg shadow-lg max-w-md p-8 relative flex flex-col items-center">
+                        <!-- Close btn -->
+                        <button id="closeApiInfo"
+                            class="absolute top-3 right-3 text-slate-500 hover:text-black text-xl">
+                            ✕
+                        </button>
+
+                        <!-- Title -->
+                        <h2 class="text-lg font-bold flex items-center gap-2 mb-2">
+                            <span class="text-blue-600">🔑</span> Get Your API Key
+                        </h2>
+
+                        <p class="mb-3">Get your free Gemini API key:</p>
+
+                        <!-- Link Btn -->
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank"
+                            class="inline-flex items-center text-blue-600 hover:underline mb-4">
+                            🔗 AI Studio
+                        </a>
+
+                        <!-- Step -->
+                        <ol class="list-decimal list-inside space-y-1 text-sm text-slate-700">
+                            <li>Visit AI Studio</li>
+                            <li>Sign in with Google account</li>
+                            <li>Click <b>"Get API key"</b></li>
+                            <li>Copy and paste below</li>
+                        </ol>
+                    </div>
+                </div>
+
 
                 <!-- RIGHT: fields -->
                 <div>
@@ -349,9 +412,30 @@ Text excerpt (may be truncated):
             </div>
         </form>
     </main>
-    
+
     <!-- Footer -->
-<?php include 'footer.php'; ?>
+    <?php include 'footer.php'; ?>
 </body>
 
 </html>
+
+
+<script>
+    const modal = document.getElementById('apiInfoModal');
+    const openBtn = document.getElementById('openApiInfo');
+    const closeBtn = document.getElementById('closeApiInfo');
+
+    openBtn.addEventListener('click', () => {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    });
+    closeBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+    });
+    // 点击背景关闭
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+        }
+    });
+</script>

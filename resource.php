@@ -107,7 +107,15 @@ $conn->close();
                         </button>
                     </div>
                     <div id="toggleContent" class="mt-3">
-                        <label class="block text-md font-medium text-slate-700">Your Gemini API Key</label>
+                        <label class="block text-md font-medium text-slate-700"><b>Your Gemini API Key</b></label>
+                        <div class="flex">
+                            <p>Don’t have a key?</p>
+                            <button id="openApiInfo"
+                                class="ml-2 text-sm text-blue-600 underline hover:text-blue-800">
+                                Click here
+                            </button>
+                        </div>
+
                         <input id="geminiKey" type="password"
                             placeholder="Paste your Gemini API key"
                             class="mt-1 w-full rounded border px-3 py-2 text-sm mb-3" />
@@ -132,6 +140,39 @@ $conn->close();
 
         </div>
 
+        <!-- Modal Background -->
+        <div id="apiInfoModal"
+            class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+            <!-- Modal Content -->
+            <div class="bg-white rounded-lg shadow-lg max-w-md p-8 relative flex flex-col items-center">
+                <!-- Close btn -->
+                <button id="closeApiInfo"
+                    class="absolute top-3 right-3 text-slate-500 hover:text-black text-xl">
+                    ✕
+                </button>
+
+                <!-- Title -->
+                <h2 class="text-lg font-bold flex items-center gap-2 mb-2">
+                    <span class="text-blue-600">🔑</span> Get Your API Key
+                </h2>
+
+                <p class="mb-3">Get your free Gemini API key:</p>
+
+                <!-- Link Btn -->
+                <a href="https://aistudio.google.com/app/apikey" target="_blank"
+                    class="inline-flex items-center text-blue-600 hover:underline mb-4">
+                    🔗 AI Studio
+                </a>
+
+                <!-- Step -->
+                <ol class="list-decimal list-inside space-y-1 text-sm text-slate-700">
+                    <li>Visit AI Studio</li>
+                    <li>Sign in with Google account</li>
+                    <li>Click <b>"Get API key"</b></li>
+                    <li>Copy and paste below</li>
+                </ol>
+            </div>
+        </div>
 
         <!-- Comment Section -->
         <div class="max-w-3xl mx-auto px-4 py-8 bg-white shadow rounded-lg">
@@ -271,4 +312,24 @@ CONTENT END`;
             URL.revokeObjectURL(url);
         });
     })();
+</script>
+
+<script>
+    const modal = document.getElementById('apiInfoModal');
+    const openBtn = document.getElementById('openApiInfo');
+    const closeBtn = document.getElementById('closeApiInfo');
+
+    openBtn.addEventListener('click', () => {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    });
+    closeBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+    });
+    // 点击背景关闭
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+        }
+    });
 </script>
