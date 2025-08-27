@@ -230,18 +230,18 @@ Text excerpt (may be truncated):
     <?php include 'header.php' ?>
     <div>
         <button
-            class=" ml-8 mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-black/10">
+            class=" ml-4 mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-black/10">
             <a href="Main.php" class="">
                 <span><i class="fa-solid fa-angle-left"></i></span> Back
             </a></button>
     </div>
 
 
-    <main class="flex-1 flex flex-col align-center justify-center mx-auto max-w-6xl px-4 py-4">
+    <main class="flex-1 flex flex-col align-center justify-center mx-auto max-w-6xl p-3 mb-3">
         <h1 class="mb-4 text-2xl font-semibold">Upload Study Material</h1>
 
         <form action="Upload.php" method="POST" enctype="multipart/form-data"
-            class="rounded-2xl bg-white p-6 shadow-xl w-auto lg:min-w-[994px]">
+            class="rounded-2xl bg-white px-4 py-4 md:p-6 shadow-xl w-auto lg:min-w-[994px]">
             <!-- Grid -->
             <div class="grid gap-6 md:grid-cols-[290px,1fr]">
                 <!-- LEFT: file + visibility -->

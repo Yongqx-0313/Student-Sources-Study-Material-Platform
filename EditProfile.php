@@ -83,7 +83,7 @@ class="min-h-screen flex flex-col">
     <!-- Header -->
     <?php include 'header.php'; ?>
 
-    <div class="flex flex-1 justify-center items-center py-10">
+    <div class="flex flex-1 justify-center items-center py-10 px-4">
         <main class="bg-white shadow-lg rounded-lg p-6 max-w-lg w-full">
             <h2 class="text-2xl font-semibold text-gray-800 text-center mb-4">Edit Profile</h2>
 

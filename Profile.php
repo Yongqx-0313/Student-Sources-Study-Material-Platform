@@ -63,7 +63,7 @@ $userResources = $stmt2->get_result();
     <?php include 'header.php' ?>
 
     <!-- Main Section -->
-    <div class="flex flex-col flex-1 justify-center items-center py-10 profile">
+    <div class="flex flex-col flex-1 justify-center items-center py-10 profile px-4">
         <main class="bg-white shadow-md rounded-lg p-6 max-w-3xl w-full">
             <!-- Profile Container -->
             <div class="flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-8">
@@ -104,7 +104,7 @@ $userResources = $stmt2->get_result();
                             <?php echo htmlspecialchars($row['type']); ?> •
                             <?php echo ucfirst($row['visibility']); ?>
                         </div>
-                        <h3 class="font-semibold text-lg">
+                        <h3 class="font-semibold text-lg line-clamp-1">
                             <?php echo htmlspecialchars($row['title']); ?>
                         </h3>
                         <p class="text-sm text-gray-600 mt-1">

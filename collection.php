@@ -63,7 +63,7 @@ $userResources = $stmt2->get_result();
     <?php include 'header.php' ?>
 
     <!-- Main Section -->
-    <div class="flex flex-col flex-1 justify-center items-center py-10 profile">
+    <div class="flex flex-col flex-1 justify-center items-center py-10 profile px-4">
 
         <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-6 justify-center items-center py-10">
             <?php while ($row = $userResources->fetch_assoc()): ?>
@@ -76,10 +76,10 @@ $userResources = $stmt2->get_result();
                             <?= ucfirst($row['visibility']); ?>
                         </div>
 
-                        <h3 class="font-semibold text-lg">
+                        <h3 class="font-semibold text-lg line-clamp-2">
                             <?= htmlspecialchars($row['title']); ?>
                         </h3>
-                        <p class="text-sm text-gray-600 mt-1">
+                        <p class="text-sm text-gray-600 mt-1 line-clamp-2">
                             <?= htmlspecialchars(substr($row['detail'], 0, 60)); ?>...
                         </p>
                     </a>

@@ -64,7 +64,7 @@ $conn->close();
     <?php include 'header.php' ?>
 
     <!-- Back Button -->
-    <button class=" ml-8 mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-black/10">
+    <button class=" ml-4 mt-3 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-black/10">
         <a href="Main.php">
             <span><i class="fa-solid fa-angle-left"></i></span> Back
         </a>
@@ -181,9 +181,9 @@ $conn->close();
             <!-- Comment Form -->
             <form method="POST" class="flex mb-4">
                 <input type="text" name="comment" placeholder="Type your comment..."
-                    class="flex-grow border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    class="flex-grow border border-gray-300 rounded-l-lg px-2 py-2 text-sm md:text-md md:px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     required>
-                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700">
+                <button type="submit" class="bg-indigo-600 text-white px-2 py-2 rounded-r-lg text-sm md:text-md md:px-3 hover:bg-indigo-700">
                     Enter Comment
                 </button>
             </form>

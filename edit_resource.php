@@ -112,15 +112,16 @@ $conn->close();
 
     <?php include 'header.php'; ?>
 
-    <main class="flex-1 flex flex-col align-center justify-center mx-auto max-w-6xl px-4 py-6">
+    <main class="flex-1 flex flex-col align-center justify-center mx-auto max-w-6xl p-3 mb-3">
         <h1 class="mb-4 text-2xl font-semibold">Edit Study Material</h1>
 
-        <form action="" method="POST" enctype="multipart/form-data" class="rounded-2xl bg-white p-6 shadow-xl w-auto lg:min-w-[994px]">
+        <form action="" method="POST" enctype="multipart/form-data" class="rounded-2xl bg-white px-4 py-4 md:p-6 shadow-xl w-auto lg:min-w-[994px]">
             <div class="grid gap-6 md:grid-cols-[290px,1fr]">
 
                 <!-- LEFT: File + Visibility -->
                 <div>
                     <label class="mb-2 block text-sm font-medium text-slate-700">Replace file (optional)</label>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
                     <input type="file" name="file"
                         class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm 
                             file:mr-4 file:rounded-md file:border-0 file:bg-slate-800 file:px-3 file:py-2 
@@ -131,7 +132,7 @@ $conn->close();
                                             <?php $fileName = basename($resource['pdf_file']); ?>
                                             <p class="mt-2 text-xs text-slate-500">
                                                 Current file:
-                                                <a href="<?php echo htmlspecialchars($resource['pdf_file']); ?>" target="_blank" class="text-blue-600 underline truncate line-clamp-1">
+                                                <a href="<?php echo htmlspecialchars($resource['pdf_file']); ?>" target="_blank" class="text-blue-600 underline truncate line-clamp-1 max-w-[320px]">
                                                     <?php echo htmlspecialchars($fileName); ?>
                                                 </a>
                                             </p>
@@ -154,6 +155,7 @@ $conn->close();
                                 class="w-full cursor-pointer rounded-full border px-3 py-2 text-center text-sm font-semibold text-rose-800 peer-checked:border-rose-400 peer-checked:bg-rose-50">
                                 Private</div>
                         </label>
+                    </div>
                     </div>
                 </div>
 

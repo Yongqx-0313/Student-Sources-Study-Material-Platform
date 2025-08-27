@@ -1,4 +1,4 @@
-<header class="sticky top-0 bg-gradient-to-r from-blue-600 via-blue-400 to-white text-black shadow">
+<header class="sticky top-0 z-50 bg-gradient-to-r from-blue-600 via-blue-400 to-white text-black shadow">
   <div class="container mx-auto px-4 py-2 flex items-center justify-between">
     <!-- Left Side Logo + Title -->
     <div class="flex items-center">
